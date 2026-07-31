@@ -1,0 +1,32 @@
+# Bundled Dex with a single demo user, for trying out the full OIDC login
+# flow without standing up an external identity provider first.
+#
+# Remember: the cluster's kube-apiserver also needs --oidc-issuer-url pointed
+# at dex.issuerUrl (see NOTES.txt after install) for per-user RBAC to apply.
+
+replicaCount: 1
+
+auth:
+  type: oidc
+  oidc:
+    clientId: console
+    clientSecret: "REPLACE_WITH_A_GENERATED_SECRET"  # e.g. openssl rand -base64 32
+
+ingress:
+  enabled: true
+  className: nginx
+  host: console.k8pler.example.com
+
+dex:
+  enabled: true
+  issuerUrl: https://dex.k8pler.example.com
+  ingress:
+    enabled: true
+    className: nginx
+    host: dex.k8pler.example.com
+  staticPasswords:
+    - email: admin@k8pler.example.com
+      # htpasswd -bnBC 10 "" 'yourpassword' | tr -d ':\n'
+      hash: "REPLACE_WITH_BCRYPT_HASH"
+      username: admin
+      userID: 08a8684b-db88-4b73-90a9-3cd1661f5466

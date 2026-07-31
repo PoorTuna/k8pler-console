@@ -1,0 +1,39 @@
+k8pler-console has been deployed.
+
+{{- if .Values.ingress.enabled }}
+Access the console at:
+  {{ include "k8pler-console.baseAddress" . }}
+{{- else if contains "NodePort" .Values.service.type }}
+Get the URL by running:
+  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "k8pler-console.fullname" . }})
+  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+  echo http://$NODE_IP:$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+Get the URL by running:
+  kubectl get svc --namespace {{ .Release.Namespace }} {{ include "k8pler-console.fullname" . }} -w
+{{- else }}
+Access the console by running:
+  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "k8pler-console.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  open http://localhost:{{ .Values.service.port }}
+{{- end }}
+
+{{- if eq .Values.auth.type "disabled" }}
+
+WARNING: auth.type=disabled — every request runs as the static bearer token
+in auth.disabled.staticBearerToken. This is for local development only.
+{{- end }}
+
+{{- if .Values.dex.enabled }}
+
+Bundled Dex is enabled at:
+{{- if .Values.dex.ingress.enabled }}
+  {{ include "k8pler-console.dex.issuerUrl" . }}
+{{- else }}
+  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "k8pler-console.dex.fullname" . }} {{ .Values.dex.service.port }}:{{ .Values.dex.service.port }}
+{{- end }}
+
+Remember: the cluster's kube-apiserver must also be configured to trust this
+OIDC issuer (--oidc-issuer-url / --oidc-client-id / --oidc-username-claim)
+for per-user RBAC to apply — this chart cannot do that for you, it's a
+cluster-admin-level change outside any single namespace.
+{{- end }}

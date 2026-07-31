@@ -1,0 +1,33 @@
+{{- if and .Values.dex.enabled .Values.dex.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "k8pler-console.dex.fullname" . }}
+  labels:
+    {{- include "k8pler-console.dex.labels" . | nindent 4 }}
+  {{- with .Values.dex.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if .Values.dex.ingress.className }}
+  ingressClassName: {{ .Values.dex.ingress.className }}
+  {{- end }}
+  {{- if .Values.dex.ingress.tls.enabled }}
+  tls:
+    - hosts:
+        - {{ .Values.dex.ingress.host | quote }}
+      secretName: {{ .Values.dex.ingress.tls.secretName | default (printf "%s-tls" (include "k8pler-console.dex.fullname" .)) }}
+  {{- end }}
+  rules:
+    - host: {{ .Values.dex.ingress.host | quote }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "k8pler-console.dex.fullname" . }}
+                port:
+                  name: http
+{{- end }}

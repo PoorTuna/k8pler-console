@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "replicaCount": { "type": "integer", "minimum": 1, "description": "Number of console replicas" },
+    "image": {
+      "type": "object",
+      "properties": {
+        "repository": { "type": "string" },
+        "tag": { "type": "string" },
+        "pullPolicy": { "type": "string", "enum": ["Always", "IfNotPresent", "Never"] }
+      },
+      "required": ["repository"]
+    },
+    "imagePullSecrets": { "type": "array" },
+    "nameOverride": { "type": "string" },
+    "fullnameOverride": { "type": "string" },
+    "console": {
+      "type": "object",
+      "properties": {
+        "branding": {
+          "type": "string",
+          "enum": ["okd", "openshift", "ocp", "online", "dedicated", "azure", "rosa"],
+          "default": "okd"
+        },
+        "customProductName": { "type": "string" },
+        "customLogo": { "type": "string" },
+        "baseAddress": { "type": "string" },
+        "basePath": { "type": "string", "default": "/" },
+        "listen": { "type": "string" },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 9000 },
+        "documentationBaseUrl": { "type": "string" },
+        "statuspageId": { "type": "string" },
+        "userSettingsLocation": { "type": "string", "enum": ["configmap", "localstorage"], "default": "localstorage" },
+        "plugins": { "type": "object", "additionalProperties": { "type": "string" } },
+        "pluginProxy": { "type": "string" },
+        "i18nNamespaces": { "type": "string" }
+      }
+    },
+    "auth": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["oidc", "disabled"], "default": "oidc" },
+        "oidc": {
+          "type": "object",
+          "properties": {
+            "issuerUrl": { "type": "string" },
+            "clientId": { "type": "string", "default": "console" },
+            "clientSecret": { "type": "string" },
+            "existingSecret": { "type": "string" },
+            "existingSecretKey": { "type": "string", "default": "client-secret" },
+            "tokenScopes": { "type": "array", "items": { "type": "string" } },
+            "ocLoginCommand": { "type": "string" }
+          }
+        },
+        "disabled": {
+          "type": "object",
+          "properties": {
+            "staticBearerToken": { "type": "string", "description": "DEV ONLY" }
+          }
+        }
+      },
+      "required": ["type"]
+    },
+    "monitoring": {
+      "type": "object",
+      "properties": {
+        "prometheusPublicUrl": { "type": "string" },
+        "grafanaPublicUrl": { "type": "string" },
+        "thanosPublicUrl": { "type": "string" }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "properties": {
+        "create": { "type": "boolean", "default": true },
+        "annotations": { "type": "object" },
+        "name": { "type": "string" },
+        "bindAuthDelegator": { "type": "boolean", "default": true }
+      }
+    },
+    "service": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string", "enum": ["ClusterIP", "NodePort", "LoadBalancer"], "default": "ClusterIP" },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 80 },
+        "targetPort": { "type": "integer", "minimum": 1, "maximum": 65535 }
+      }
+    },
+    "ingress": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "className": { "type": "string" },
+        "annotations": { "type": "object" },
+        "host": { "type": "string" },
+        "path": { "type": "string", "default": "/" },
+        "pathType": { "type": "string", "enum": ["Prefix", "Exact", "ImplementationSpecific"], "default": "Prefix" },
+        "tls": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "secretName": { "type": "string" }
+          }
+        }
+      }
+    },
+    "tls": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "existingSecret": { "type": "string" }
+      }
+    },
+    "resources": { "type": "object" },
+    "nodeSelector": { "type": "object" },
+    "tolerations": { "type": "array" },
+    "affinity": { "type": "object" },
+    "podAnnotations": { "type": "object" },
+    "podLabels": { "type": "object" },
+    "podSecurityContext": { "type": "object" },
+    "securityContext": { "type": "object" },
+    "extraArgs": { "type": "array", "items": { "type": "string" } },
+    "extraEnv": { "type": "array" },
+    "extraVolumes": { "type": "array" },
+    "extraVolumeMounts": { "type": "array" },
+    "dex": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "image": {
+          "type": "object",
+          "properties": {
+            "repository": { "type": "string" },
+            "tag": { "type": "string" },
+            "pullPolicy": { "type": "string", "enum": ["Always", "IfNotPresent", "Never"] }
+          }
+        },
+        "issuerUrl": { "type": "string" },
+        "staticClients": { "type": "array" },
+        "staticPasswords": { "type": "array" },
+        "connectors": { "type": "array" },
+        "resources": { "type": "object" },
+        "service": {
+          "type": "object",
+          "properties": {
+            "port": { "type": "integer", "minimum": 1, "maximum": 65535, "default": 5556 }
+          }
+        },
+        "ingress": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "className": { "type": "string" },
+            "annotations": { "type": "object" },
+            "host": { "type": "string" },
+            "tls": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean", "default": false },
+                "secretName": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["console", "auth"]
+}

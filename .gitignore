@@ -34,3 +34,7 @@ cypress-a11y-report.json
 /dynamic-demo-plugin/**/yarn-error.log
 /dynamic-demo-plugin/**/dist
 **/chartstore-*/
+
+# Packaged Helm charts (build output, not source)
+charts/*.tgz
+charts/**/*.tgz

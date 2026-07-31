@@ -1,0 +1,16 @@
+# Fastest path to a running console: no ingress, no OIDC provider, single
+# static bearer token. NOT for anything beyond a local kind/minikube poke.
+#
+#   helm install k8pler-console ./charts/k8pler-console -f examples/minimal-values.yaml
+#   kubectl port-forward svc/k8pler-console 9000:80
+#   open http://localhost:9000
+
+replicaCount: 1
+
+auth:
+  type: disabled
+  disabled:
+    staticBearerToken: "REPLACE_WITH_A_REAL_CLUSTER_TOKEN"
+
+ingress:
+  enabled: false

@@ -1,0 +1,19 @@
+replicaCount: 1
+
+image:
+  repository: k8pler-console
+  tag: "test"
+  pullPolicy: Never
+
+auth:
+  type: disabled
+  disabled:
+    staticBearerToken: "test-token"
+
+serviceAccount:
+  create: true
+  bindAuthDelegator: true
+
+service:
+  type: ClusterIP
+  port: 80

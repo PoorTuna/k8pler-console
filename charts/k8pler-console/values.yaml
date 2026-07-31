@@ -1,0 +1,173 @@
+replicaCount: 2
+
+image:
+  repository: poortuna/k8pler-console
+  tag: ""  # Defaults to appVersion
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+# -- Console (bridge) configuration, rendered into container args
+console:
+  # -- One of: okd, openshift, ocp, online, dedicated, azure, rosa
+  branding: okd
+  customProductName: "k8pler"
+  # -- Base64/plain PEM content for a custom masthead logo. Rendered to a
+  # -- ConfigMap and mounted when set.
+  customLogo: ""
+  # -- Public base URL the console is reachable at, e.g. https://console.example.com
+  # -- Auto-derived from ingress.host + tls when left empty.
+  baseAddress: ""
+  basePath: "/"
+  # -- Must stay in sync with each other (scheme + port). Use https:// and set
+  # -- tls.enabled=true to serve TLS directly from the bridge.
+  listen: "http://0.0.0.0:9000"
+  port: 9000
+  documentationBaseUrl: ""
+  statuspageId: ""
+  # -- Where per-user console preferences are stored. localstorage avoids
+  # -- needing the (OpenShift-only) user.openshift.io API.
+  userSettingsLocation: localstorage
+  # -- console.plugins map: plugin-name -> plugin-endpoint-url
+  plugins: {}
+  # -- Raw JSON string for --plugin-proxy
+  pluginProxy: ""
+  # -- Comma-separated i18n namespaces for dynamic plugins
+  i18nNamespaces: ""
+
+# -- User authentication. type: oidc | disabled
+auth:
+  type: oidc
+
+  oidc:
+    # -- Must match dex.issuerUrl when dex.enabled=true
+    issuerUrl: ""
+    clientId: "console"
+    # -- Inlined as a generated Secret when set. Prefer existingSecret for production.
+    clientSecret: ""
+    # -- Reference an existing Secret instead of auth.oidc.clientSecret
+    existingSecret: ""
+    existingSecretKey: "client-secret"
+    # -- Extra OIDC scopes to request ID tokens with
+    tokenScopes: []
+    # -- External `oc login` command shown in the console's "Copy Login Command" dialog
+    ocLoginCommand: ""
+
+  disabled:
+    # -- DEV ONLY. Static bearer token used for every request when auth.type=disabled.
+    staticBearerToken: ""
+
+# -- Optional upstream service public URLs for the Observe/monitoring dashboards.
+# -- Leave unset to render those pages empty rather than erroring.
+monitoring:
+  prometheusPublicUrl: ""
+  grafanaPublicUrl: ""
+  thanosPublicUrl: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+  # -- Bind system:auth-delegator so the bridge can validate bearer tokens via
+  # -- TokenReview, regardless of auth.type. Required.
+  bindAuthDelegator: true
+
+service:
+  type: ClusterIP
+  port: 80
+  # -- Set to 443 + tls.enabled to terminate TLS at the console pod itself
+  # -- instead of at an Ingress.
+  targetPort: 9000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  #  cert-manager.io/cluster-issuer: letsencrypt
+  host: console.example.com
+  path: /
+  pathType: Prefix
+  tls:
+    enabled: false
+    secretName: ""
+
+tls:
+  # -- Serve HTTPS directly from the bridge (in addition to, or instead of,
+  # -- TLS-terminating Ingress). Requires existingSecret with tls.crt/tls.key.
+  enabled: false
+  existingSecret: ""
+
+resources: {}
+  # limits:
+  #   cpu: 500m
+  #   memory: 512Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext:
+  runAsNonRoot: true
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+# -- Extra raw bridge CLI flags, appended verbatim (e.g. ["--telemetry=foo=bar"])
+extraArgs: []
+extraEnv: []
+extraVolumes: []
+extraVolumeMounts: []
+
+# -- Bundled Dex OIDC provider. Meant for quick starts / dev; for production,
+# -- run Dex (or any other OIDC provider) separately and point auth.oidc.issuerUrl
+# -- at it instead.
+dex:
+  enabled: false
+
+  image:
+    repository: ghcr.io/dexidp/dex
+    tag: v2.41.1
+    pullPolicy: IfNotPresent
+
+  # -- Must match auth.oidc.issuerUrl when enabled
+  issuerUrl: ""
+
+  # -- Dex staticClients entries. Defaults to a single "console" client wired
+  # -- to auth.oidc.clientId/clientSecret and ingress.host when left empty.
+  staticClients: []
+
+  # -- Dev-only fallback identity source (bcrypt password hashes). Prefer a
+  # -- real connector below for anything beyond a demo.
+  staticPasswords: []
+  #  - email: admin@example.com
+  #    hash: "$2a$10$..."   # htpasswd -bnBC 10 "" 'yourpassword' | tr -d ':\n'
+  #    username: admin
+  #    userID: 08a8684b-db88-4b73-90a9-3cd1661f5466
+
+  # -- Raw Dex connector config objects (LDAP, GitHub, upstream OIDC, SAML...)
+  # -- https://dexidp.io/docs/connectors/
+  connectors: []
+
+  resources: {}
+
+  service:
+    port: 5556
+
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    host: dex.example.com
+    tls:
+      enabled: false
+      secretName: ""

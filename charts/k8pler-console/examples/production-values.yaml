@@ -1,0 +1,51 @@
+# External OIDC provider (not bundled Dex), TLS-terminating Ingress,
+# resource requests/limits, and an existing Secret for the client secret.
+
+replicaCount: 2
+
+image:
+  tag: "v1.0.0"
+
+console:
+  customProductName: "Acme Console"
+
+auth:
+  type: oidc
+  oidc:
+    issuerUrl: https://login.acme.example.com/oidc
+    clientId: k8pler-console
+    existingSecret: k8pler-console-oidc-client  # key: client-secret
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+  host: console.acme.example.com
+  tls:
+    enabled: true
+
+monitoring:
+  prometheusPublicUrl: https://prometheus.acme.example.com
+  grafanaPublicUrl: https://grafana.acme.example.com
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+podAnnotations:
+  prometheus.io/scrape: "false"
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: k8pler-console

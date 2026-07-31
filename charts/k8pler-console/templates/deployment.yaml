@@ -1,0 +1,181 @@
+{{- include "k8pler-console.validate" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k8pler-console.fullname" . }}
+  labels:
+    {{- include "k8pler-console.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "k8pler-console.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "k8pler-console.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "k8pler-console.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ include "k8pler-console.imageTag" . }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - --k8s-mode=in-cluster
+            - --listen={{ .Values.console.listen }}
+            - --base-address={{ include "k8pler-console.baseAddress" . }}
+            - --base-path={{ .Values.console.basePath }}
+            - --branding={{ .Values.console.branding }}
+            {{- if .Values.console.customProductName }}
+            - --custom-product-name={{ .Values.console.customProductName }}
+            {{- end }}
+            {{- if .Values.console.customLogo }}
+            - --custom-logo-file=/etc/console/logo/logo
+            {{- end }}
+            - --user-settings-location={{ .Values.console.userSettingsLocation }}
+            {{- if .Values.console.documentationBaseUrl }}
+            - --documentation-base-url={{ .Values.console.documentationBaseUrl }}
+            {{- end }}
+            {{- if .Values.console.statuspageId }}
+            - --statuspage-id={{ .Values.console.statuspageId }}
+            {{- end }}
+            {{- if .Values.console.pluginProxy }}
+            - --plugin-proxy={{ .Values.console.pluginProxy }}
+            {{- end }}
+            {{- if .Values.console.i18nNamespaces }}
+            - --i18n-namespaces={{ .Values.console.i18nNamespaces }}
+            {{- end }}
+            {{- range $name, $endpoint := .Values.console.plugins }}
+            - --plugins={{ $name }}={{ $endpoint }}
+            {{- end }}
+            - --user-auth={{ .Values.auth.type }}
+            {{- if eq .Values.auth.type "oidc" }}
+            {{- if .Values.dex.enabled }}
+            - --user-auth-oidc-issuer-url={{ include "k8pler-console.dex.issuerUrl" . }}
+            {{- else }}
+            - --user-auth-oidc-issuer-url={{ .Values.auth.oidc.issuerUrl }}
+            {{- end }}
+            - --user-auth-oidc-client-id={{ .Values.auth.oidc.clientId }}
+            - --user-auth-oidc-client-secret-file=/etc/console/oidc/client-secret
+            {{- if .Values.auth.oidc.ocLoginCommand }}
+            - --user-auth-oidc-oc-login-command={{ .Values.auth.oidc.ocLoginCommand }}
+            {{- end }}
+            {{- if .Values.auth.oidc.tokenScopes }}
+            - --user-auth-oidc-token-scopes={{ join "," .Values.auth.oidc.tokenScopes }}
+            {{- end }}
+            {{- end }}
+            {{- if eq .Values.auth.type "disabled" }}
+            - --k8s-auth-bearer-token={{ .Values.auth.disabled.staticBearerToken }}
+            {{- end }}
+            {{- if .Values.monitoring.prometheusPublicUrl }}
+            - --prometheus-public-url={{ .Values.monitoring.prometheusPublicUrl }}
+            {{- end }}
+            {{- if .Values.monitoring.grafanaPublicUrl }}
+            - --grafana-public-url={{ .Values.monitoring.grafanaPublicUrl }}
+            {{- end }}
+            {{- if .Values.monitoring.thanosPublicUrl }}
+            - --thanos-public-url={{ .Values.monitoring.thanosPublicUrl }}
+            {{- end }}
+            {{- if .Values.tls.enabled }}
+            - --tls-cert-file=/etc/console/tls/tls.crt
+            - --tls-key-file=/etc/console/tls/tls.key
+            {{- end }}
+            {{- with .Values.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.console.port }}
+              protocol: TCP
+          {{- with .Values.extraEnv }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: {{ .Values.tls.enabled | ternary "HTTPS" "HTTP" }}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: {{ .Values.tls.enabled | ternary "HTTPS" "HTTP" }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+          volumeMounts:
+            {{- if eq .Values.auth.type "oidc" }}
+            - name: oidc-client-secret
+              mountPath: /etc/console/oidc
+              readOnly: true
+            {{- end }}
+            {{- if .Values.console.customLogo }}
+            - name: custom-logo
+              mountPath: /etc/console/logo
+              readOnly: true
+            {{- end }}
+            {{- if .Values.tls.enabled }}
+            - name: tls
+              mountPath: /etc/console/tls
+              readOnly: true
+            {{- end }}
+            {{- with .Values.extraVolumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        {{- if eq .Values.auth.type "oidc" }}
+        - name: oidc-client-secret
+          secret:
+            secretName: {{ .Values.auth.oidc.existingSecret | default (printf "%s-oidc" (include "k8pler-console.fullname" .)) }}
+            items:
+              - key: {{ .Values.auth.oidc.existingSecretKey | default "client-secret" }}
+                path: client-secret
+        {{- end }}
+        {{- if .Values.console.customLogo }}
+        - name: custom-logo
+          configMap:
+            name: {{ include "k8pler-console.fullname" . }}-logo
+        {{- end }}
+        {{- if .Values.tls.enabled }}
+        - name: tls
+          secret:
+            secretName: {{ .Values.tls.existingSecret }}
+        {{- end }}
+        {{- with .Values.extraVolumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,11 @@
+{{- if .Values.console.customLogo -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "k8pler-console.fullname" . }}-logo
+  labels:
+    {{- include "k8pler-console.labels" . | nindent 4 }}
+data:
+  logo: |
+    {{- .Values.console.customLogo | nindent 4 }}
+{{- end }}

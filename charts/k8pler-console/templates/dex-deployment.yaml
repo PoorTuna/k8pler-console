@@ -1,0 +1,64 @@
+{{- if .Values.dex.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k8pler-console.dex.fullname" . }}
+  labels:
+    {{- include "k8pler-console.dex.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "k8pler-console.dex.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/dex-secret-config.yaml") . | sha256sum }}
+      labels:
+        {{- include "k8pler-console.dex.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "k8pler-console.dex.fullname" . }}
+      containers:
+        - name: dex
+          image: "{{ .Values.dex.image.repository }}:{{ .Values.dex.image.tag }}"
+          imagePullPolicy: {{ .Values.dex.image.pullPolicy }}
+          command: ["/usr/local/bin/dex", "serve", "/etc/dex/config.yaml"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.dex.service.port }}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/dex
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /.well-known/openid-configuration
+              port: http
+            initialDelaySeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+          {{- with .Values.dex.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          secret:
+            secretName: {{ include "k8pler-console.dex.fullname" . }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "k8pler-console.dex.fullname" . }}
+  labels:
+    {{- include "k8pler-console.dex.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "k8pler-console.dex.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.dex.service.port }}
+      targetPort: http
+{{- end }}

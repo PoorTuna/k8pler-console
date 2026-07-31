@@ -1,0 +1,24 @@
+apiVersion: v2
+name: k8pler-console
+description: >-
+  Web console for plain Kubernetes clusters — a de-OpenShift-ed fork of the
+  OpenShift Console (release-4.16 UI), authenticating via OIDC. Optionally
+  bundles a Dex OIDC provider for quick starts.
+type: application
+version: 0.1.0
+appVersion: "4.16.0"
+kubeVersion: ">=1.24.0-0"
+home: https://github.com/PoorTuna/k8pler-console
+sources:
+  - https://github.com/PoorTuna/k8pler-console
+keywords:
+  - console
+  - kubernetes
+  - dashboard
+  - ui
+  - oidc
+maintainers:
+  - name: PoorTuna
+    url: https://github.com/PoorTuna
+annotations:
+  artifacthub.io/license: Apache-2.0

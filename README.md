@@ -1,3 +1,15 @@
+# k8pler-console
+
+A de-OpenShift-ed fork of the OpenShift Console (release-4.16 UI) that runs
+on **plain Kubernetes** with OIDC authentication. See `NOTICE.md` for
+provenance and `docs/RUNNING-ON-KUBERNETES.md` for the bridge's k8s/OIDC
+flags.
+
+**Deploying:** use the Helm chart at [`charts/k8pler-console`](charts/k8pler-console/README.md)
+(recommended), or the raw manifests in [`deploy/`](deploy/README.md).
+
+---
+
 # OpenShift Console
 
 Codename: "Bridge"
