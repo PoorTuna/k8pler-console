@@ -36,8 +36,11 @@ spec:
           image: "{{ .Values.image.repository }}:{{ include "k8pler-console.imageTag" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
+            {{- /* Force the listen scheme to match tls.enabled: the bridge only serves TLS when
+                   its listen URL scheme is https (main.go), so these two must never drift apart. */}}
+            {{- $listenScheme := .Values.tls.enabled | ternary "https" "http" }}
             - --k8s-mode=in-cluster
-            - --listen={{ .Values.console.listen }}
+            - --listen={{ regexReplaceAll "^https?://" .Values.console.listen (printf "%s://" $listenScheme) }}
             - --base-address={{ include "k8pler-console.baseAddress" . }}
             - --base-path={{ .Values.console.basePath }}
             - --branding={{ .Values.console.branding }}
@@ -72,6 +75,8 @@ spec:
             {{- end }}
             - --user-auth-oidc-client-id={{ .Values.auth.oidc.clientId }}
             - --user-auth-oidc-client-secret-file=/etc/console/oidc/client-secret
+            - --cookie-encryption-key-file=/etc/console/cookies/encryption-key
+            - --cookie-authentication-key-file=/etc/console/cookies/authentication-key
             {{- if .Values.auth.oidc.ocLoginCommand }}
             - --user-auth-oidc-oc-login-command={{ .Values.auth.oidc.ocLoginCommand }}
             {{- end }}
@@ -127,6 +132,9 @@ spec:
             - name: oidc-client-secret
               mountPath: /etc/console/oidc
               readOnly: true
+            - name: cookie-keys
+              mountPath: /etc/console/cookies
+              readOnly: true
             {{- end }}
             {{- if .Values.console.customLogo.enabled }}
             - name: custom-logo
@@ -153,6 +161,9 @@ spec:
             items:
               - key: {{ .Values.auth.oidc.existingSecretKey | default "client-secret" }}
                 path: client-secret
+        - name: cookie-keys
+          secret:
+            secretName: {{ include "k8pler-console.fullname" . }}-cookie-keys
         {{- end }}
         {{- if .Values.console.customLogo.enabled }}
         - name: custom-logo

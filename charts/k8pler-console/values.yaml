@@ -2,7 +2,10 @@ replicaCount: 2
 
 image:
   repository: poortuna/k8pler-console
-  tag: ""  # Defaults to appVersion
+  # -- No release pipeline publishes a tag matching Chart.yaml's appVersion;
+  # -- "latest" is the only tag actually pushed to Docker Hub. Pin an exact
+  # -- tag for anything beyond a quick try.
+  tag: "latest"
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
@@ -27,14 +30,17 @@ console:
   # -- Auto-derived from ingress.host + tls when left empty.
   baseAddress: ""
   basePath: "/"
-  # -- Must stay in sync with each other (scheme + port). Use https:// and set
-  # -- tls.enabled=true to serve TLS directly from the bridge.
+  # -- Bind address:port the bridge listens on inside the pod. The scheme is
+  # -- ignored -- it's always overridden to match tls.enabled, so the bridge
+  # -- can never end up serving plain HTTP while tls.cert/key are configured
+  # -- (or vice versa).
   listen: "http://0.0.0.0:9000"
   port: 9000
   documentationBaseUrl: ""
   statuspageId: ""
   # -- Where per-user console preferences are stored. localstorage avoids
-  # -- needing the (OpenShift-only) user.openshift.io API.
+  # -- needing a ConfigMap in the openshift-console-user-settings namespace,
+  # -- which doesn't exist on plain k8s.
   userSettingsLocation: localstorage
   # -- console.plugins map: plugin-name -> plugin-endpoint-url
   plugins: {}
@@ -82,10 +88,9 @@ serviceAccount:
 
 service:
   type: ClusterIP
-  port: 80
   # -- Set to 443 + tls.enabled to terminate TLS at the console pod itself
   # -- instead of at an Ingress.
-  targetPort: 9000
+  port: 80
 
 ingress:
   enabled: false

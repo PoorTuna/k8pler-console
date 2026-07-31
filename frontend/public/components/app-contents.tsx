@@ -404,21 +404,6 @@ const AppContents: React.FC<{}> = () => {
         }
       />
 
-      <Route path="/operatorhub" element={<NamespaceRedirect />} />
-
-      <Route
-        path="/catalog/instantiate-template"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import('./instantiate-template' /* webpackChunkName: "instantiate-template" */).then(
-                (m) => m.InstantiateTemplatePage,
-              )
-            }
-          />
-        }
-      />
-
       <Route path="/k8s/ns/:ns/alertmanagers/:name" element={<AlertManagerRedirect />} />
       <Route path="/k8s/ns/:ns/batch~v1beta1~CronJob/:name" element={<CronJobRedirect />} />
       <Route
@@ -584,34 +569,6 @@ const AppContents: React.FC<{}> = () => {
       />
 
       <Route
-        path="/k8s/ns/:ns/routes/~new/form"
-        element={
-          <AsyncComponent
-            kind="Route"
-            loader={() =>
-              import('./routes/RoutePage' /* webpackChunkName: "create-route" */).then(
-                (m) => m.RoutePage,
-              )
-            }
-          />
-        }
-      />
-
-      <Route
-        path="/k8s/ns/:ns/routes/:name/form"
-        element={
-          <AsyncComponent
-            kind="Route"
-            loader={() =>
-              import('./routes/RoutePage' /* webpackChunkName: "edit-route" */).then(
-                (m) => m.RoutePage,
-              )
-            }
-          />
-        }
-      />
-
-      <Route
         path="/k8s/cluster/rolebindings/~new"
         element={
           <AsyncComponent
@@ -766,126 +723,6 @@ const AppContents: React.FC<{}> = () => {
         }
       />
 
-      <Route
-        path="/settings/idp/github"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import(
-                './cluster-settings/github-idp-form' /* webpackChunkName: "github-idp-form" */
-              ).then((m) => m.AddGitHubPage)
-            }
-          />
-        }
-      />
-      <Route
-        path="/settings/idp/gitlab"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import(
-                './cluster-settings/gitlab-idp-form' /* webpackChunkName: "gitlab-idp-form" */
-              ).then((m) => m.AddGitLabPage)
-            }
-          />
-        }
-      />
-      <Route
-        path="/settings/idp/google"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import(
-                './cluster-settings/google-idp-form' /* webpackChunkName: "google-idp-form" */
-              ).then((m) => m.AddGooglePage)
-            }
-          />
-        }
-      />
-      <Route
-        path="/settings/idp/htpasswd"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import(
-                './cluster-settings/htpasswd-idp-form' /* webpackChunkName: "htpasswd-idp-form" */
-              ).then((m) => m.AddHTPasswdPage)
-            }
-          />
-        }
-      />
-      <Route
-        path="/settings/idp/keystone"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import(
-                './cluster-settings/keystone-idp-form' /* webpackChunkName: "keystone-idp-form" */
-              ).then((m) => m.AddKeystonePage)
-            }
-          />
-        }
-      />
-      <Route
-        path="/settings/idp/ldap"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import(
-                './cluster-settings/ldap-idp-form' /* webpackChunkName: "ldap-idp-form" */
-              ).then((m) => m.AddLDAPPage)
-            }
-          />
-        }
-      />
-      <Route
-        path="/settings/idp/ldap"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import(
-                './cluster-settings/ldap-idp-form' /* webpackChunkName: "ldap-idp-form" */
-              ).then((m) => m.AddLDAPPage)
-            }
-          />
-        }
-      />
-      <Route
-        path="/settings/idp/oidconnect"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import(
-                './cluster-settings/openid-idp-form' /* webpackChunkName: "openid-idp-form" */
-              ).then((m) => m.AddOpenIDIDPPage)
-            }
-          />
-        }
-      />
-      <Route
-        path="/settings/idp/basicauth"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import(
-                './cluster-settings/basicauth-idp-form' /* webpackChunkName: "basicauth-idp-form" */
-              ).then((m) => m.AddBasicAuthPage)
-            }
-          />
-        }
-      />
-      <Route
-        path="/settings/idp/requestheader"
-        element={
-          <AsyncComponent
-            loader={() =>
-              import(
-                './cluster-settings/request-header-idp-form' /* webpackChunkName: "request-header-idp-form" */
-              ).then((m) => m.AddRequestHeaderPage)
-            }
-          />
-        }
-      />
       <Route
         path="/settings/cluster/*"
         element={

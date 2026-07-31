@@ -8,8 +8,8 @@ import {
   FirehoseResult,
   LoadingBox,
 } from '@console/internal/components/utils';
-import { ImageStreamTagModel, NamespaceModel, PodModel } from '@console/internal/models';
-import { NodeKind, PodKind, k8sCreate, k8sGet, k8sKillByName } from '@console/internal/module/k8s';
+import { NamespaceModel, PodModel } from '@console/internal/models';
+import { NodeKind, PodKind, k8sCreate, k8sKillByName } from '@console/internal/module/k8s';
 
 type NodeTerminalErrorProps = {
   error: React.ReactNode;
@@ -23,34 +23,24 @@ type NodeTerminalProps = {
   obj: NodeKind;
 };
 
-const getDebugImage = async (): Promise<string> => {
-  try {
-    const istag = await k8sGet(ImageStreamTagModel, 'tools:latest', 'openshift');
-    return istag.image.dockerImageReference;
-  } catch (e) {
-    return 'registry.redhat.io/rhel8/support-tools';
-  }
-};
+// Plain public debug image -- no OpenShift ImageStreamTag lookup, no
+// registry.redhat.io fallback (which requires Red Hat registry auth and
+// would ImagePullBackOff on a vanilla cluster anyway).
+const DEBUG_IMAGE = 'busybox:1.36';
 
-const getDebugPod = async (
+const getDebugPod = (
   name: string,
   namespace: string,
   nodeName: string,
   isWindows: boolean,
-): Promise<PodKind> => {
-  const image = await getDebugImage();
-  // configuration as specified in https://github.com/openshift/oc/blob/master/pkg/cli/debug/debug.go#L1024-L1114
+): PodKind => {
+  const image = DEBUG_IMAGE;
   const template: PodKind = {
     kind: 'Pod',
     apiVersion: 'v1',
     metadata: {
       name,
       namespace,
-      annotations: {
-        'debug.openshift.io/source-container': 'container-00',
-        'debug.openshift.io/source-resource': `/v1, Resource=nodes/${nodeName}`,
-        'openshift.io/scc': 'privileged',
-      },
     },
     spec: {
       containers: [
@@ -179,20 +169,15 @@ const NodeTerminal: React.FC<NodeTerminalProps> = ({ obj: node }) => {
       try {
         namespace = await k8sCreate(NamespaceModel, {
           metadata: {
-            generateName: 'openshift-debug-',
+            generateName: 'k8pler-debug-',
             labels: {
-              'openshift.io/run-level': '0',
               'pod-security.kubernetes.io/audit': 'privileged',
               'pod-security.kubernetes.io/enforce': 'privileged',
               'pod-security.kubernetes.io/warn': 'privileged',
-              'security.openshift.io/scc.podSecurityLabelSync': 'false',
-            },
-            annotations: {
-              'openshift.io/node-selector': '',
             },
           },
         });
-        const podToCreate = await getDebugPod(name, namespace.metadata.name, nodeName, isWindows);
+        const podToCreate = getDebugPod(name, namespace.metadata.name, nodeName, isWindows);
         // wait for the namespace to be ready
         await new Promise((resolve) => setTimeout(resolve, 1000));
         const debugPod = await k8sCreate(PodModel, podToCreate);

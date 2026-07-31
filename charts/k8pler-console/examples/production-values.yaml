@@ -4,6 +4,8 @@
 replicaCount: 2
 
 image:
+  # Illustrative — pin to a tag you've actually built and pushed yourself.
+  # There's no release pipeline; only ":latest" is published to Docker Hub.
   tag: "v1.0.0"
 
 console:

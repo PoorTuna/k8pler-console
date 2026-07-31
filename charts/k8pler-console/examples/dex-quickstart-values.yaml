@@ -16,6 +16,8 @@ ingress:
   enabled: true
   className: nginx
   host: console.k8pler.example.com
+  tls:
+    enabled: true
 
 dex:
   enabled: true
@@ -24,6 +26,8 @@ dex:
     enabled: true
     className: nginx
     host: dex.k8pler.example.com
+    tls:
+      enabled: true
   staticPasswords:
     - email: admin@k8pler.example.com
       # htpasswd -bnBC 10 "" 'yourpassword' | tr -d ':\n'

@@ -11,6 +11,9 @@ kubectl apply -f deploy/02-dex-deployment.yaml
 kubectl apply -f deploy/03-dex-ingress.yaml
 kubectl apply -f deploy/04-console-rbac.yaml
 kubectl apply -f deploy/05-console-secret.yaml
+kubectl create secret generic console-cookie-keys -n k8pler-console \
+  --from-literal=encryption-key="$(openssl rand -base64 32)" \
+  --from-literal=authentication-key="$(openssl rand -base64 32)"
 kubectl apply -f deploy/06-console-deployment.yaml
 kubectl apply -f deploy/07-console-ingress.yaml
 ```
@@ -29,9 +32,14 @@ kubectl apply -f deploy/07-console-ingress.yaml
    better, swap `staticPasswords` for a real connector (LDAP, GitHub,
    upstream OIDC, SAML — see https://dexidp.io/docs/connectors/). The static
    password list is a bootstrap/demo mechanism only.
-4. **Build and push the console image**: `docker build -t <your-registry>/k8pler-console:latest .`
-   and update the `image:` field in `deploy/06-console-deployment.yaml`.
-5. **Ingress annotations** assume `ingressClassName: nginx` and
+4. **Generate the cookie encryption/authentication keys** (see the
+   `kubectl create secret` command above) — the bridge refuses to start
+   with `--user-auth=oidc` without them. Generate them once; regenerating
+   later invalidates every logged-in session.
+5. **Build and push the console image**, or use the published
+   `poortuna/k8pler-console:latest` already referenced in
+   `deploy/06-console-deployment.yaml`.
+6. **Ingress annotations** assume `ingressClassName: nginx` and
    `cert-manager.io/cluster-issuer: letsencrypt`. Adjust for your cluster's
    actual ingress controller / TLS setup. Both hostnames must serve valid
    TLS — OIDC issuer URLs and redirect URIs must be `https`.

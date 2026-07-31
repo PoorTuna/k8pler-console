@@ -18,13 +18,18 @@ spec:
       serviceAccountName: k8pler-console
       containers:
         - name: console
-          image: k8pler-console:latest
+          image: poortuna/k8pler-console:latest
           args:
             - --k8s-mode=in-cluster
             - --user-auth=oidc
             - --user-auth-oidc-issuer-url=https://dex.k8pler.example.com
             - --user-auth-oidc-client-id=console
             - --user-auth-oidc-client-secret-file=/etc/console/oidc/client-secret
+            # The bridge hard-requires these two whenever --user-auth=oidc
+            # (cmd/bridge/config/session/sessionoptions.go) -- it will not
+            # start without them.
+            - --cookie-encryption-key-file=/etc/console/cookies/encryption-key
+            - --cookie-authentication-key-file=/etc/console/cookies/authentication-key
             - --user-settings-location=localstorage
             - --base-address=https://console.k8pler.example.com
             - --listen=http://0.0.0.0:9000
@@ -36,6 +41,9 @@ spec:
           volumeMounts:
             - name: oidc-client-secret
               mountPath: /etc/console/oidc
+              readOnly: true
+            - name: cookie-keys
+              mountPath: /etc/console/cookies
               readOnly: true
           readinessProbe:
             httpGet:
@@ -54,6 +62,9 @@ spec:
             items:
               - key: client-secret
                 path: client-secret
+        - name: cookie-keys
+          secret:
+            secretName: console-cookie-keys
 ---
 apiVersion: v1
 kind: Service

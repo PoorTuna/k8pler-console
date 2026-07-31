@@ -60,10 +60,11 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
-Image tag — defaults to appVersion
+Image tag — values.yaml defaults this to "latest" (the only tag actually
+published); fall back to it here too in case someone blanks the value.
 */}}
 {{- define "k8pler-console.imageTag" -}}
-{{- default .Chart.AppVersion .Values.image.tag }}
+{{- default "latest" .Values.image.tag }}
 {{- end }}
 
 {{/*

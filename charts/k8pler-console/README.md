@@ -76,7 +76,7 @@ All parameters are documented inline in [`values.yaml`](values.yaml). Key ones:
 | `console.customProductName` | Overrides the branded product name | `k8pler` |
 | `console.customLogo.enabled` | Replace the masthead logo. `false` falls back to the stock `console.branding` mark | `true` |
 | `console.customLogo.data` | Base64-encoded logo override; empty uses the bundled `files/logo.png` | — |
-| `console.userSettingsLocation` | `localstorage` avoids needing the OpenShift-only `user.openshift.io` API | `localstorage` |
+| `console.userSettingsLocation` | `localstorage` avoids needing a ConfigMap in the `openshift-console-user-settings` namespace, which doesn't exist on plain k8s | `localstorage` |
 | `console.baseAddress` | Public URL; auto-derived from `ingress.host` when unset | — |
 | `console.plugins` | Map of dynamic-plugin `name: endpoint` | `{}` |
 
@@ -85,7 +85,7 @@ All parameters are documented inline in [`values.yaml`](values.yaml). Key ones:
 | Parameter | Description | Default |
 |---|---|---|
 | `auth.type` | `oidc` or `disabled` (`openshift` from upstream is not supported by this fork) | `oidc` |
-| `auth.oidc.issuerUrl` | External OIDC issuer. Ignored when `dex.enabled=true` (Dex's own issuer is used) | — |
+| `auth.oidc.issuerUrl` | External OIDC issuer. When `dex.enabled=true`, the console always uses Dex's own issuer instead — leave this unset, or set it to match `dex.issuerUrl` exactly (a mismatch fails validation) | — |
 | `auth.oidc.clientSecret` / `auth.oidc.existingSecret` | Exactly one must be set when `auth.type=oidc` | — |
 | `auth.disabled.staticBearerToken` | DEV ONLY — every request runs as this token | — |
 

@@ -17,15 +17,28 @@ none of the OpenShift monitoring/GitOps proxies get wired up.
   -user-auth-oidc-issuer-url https://<dex-or-keycloak-issuer> \
   -user-auth-oidc-client-id console \
   -user-auth-oidc-client-secret <client-secret> \
+  -cookie-encryption-key-file /path/to/encryption-key \
+  -cookie-authentication-key-file /path/to/authentication-key \
   -user-settings-location localstorage \
   -base-address http://localhost:9000 \
   -branding okd \
   -custom-product-name k8pler
 ```
 
+`-cookie-encryption-key-file` / `-cookie-authentication-key-file` are
+**required** whenever `-user-auth oidc`
+(`cmd/bridge/config/session/sessionoptions.go`) — the bridge refuses to
+start without them. Generate two random files once and keep them stable;
+regenerating them invalidates every logged-in session:
+```
+openssl rand -base64 32 > encryption-key
+openssl rand -base64 32 > authentication-key
+```
+
 `-user-settings-location localstorage` is required: the upstream default
-(`configmap`) persists user preferences to a `user.openshift.io` resource that
-doesn't exist on plain k8s.
+(`configmap`) persists user preferences to a `ConfigMap` in the
+`openshift-console-user-settings` namespace (`pkg/usersettings/handlers.go`),
+which doesn't exist on plain k8s.
 
 ## In-cluster (deployed)
 
@@ -56,5 +69,11 @@ Same auth flags, but:
   namespace. This namespace won't exist on plain k8s, but the lister is lazy
   (`pkg/server/resource_lister.go`) — it only errors the specific request
   that hits it, not startup.
-- `KnativeEventSourceCRDLister` / `KnativeChannelCRDLister` list CRDs by label
-  and simply return empty results if Knative isn't installed — no crash.
+- `KnativeEventSourceCRDLister` / `KnativeChannelCRDLister` list CRDs by
+  label. Same lazy behavior — not a startup crash — but the actual result
+  depends on what the console's identity can do: with a full/admin
+  kubeconfig (off-cluster dev) they return whatever CRDs match (empty list
+  if none). With the chart/`deploy/`'s in-cluster ServiceAccount, which is
+  bound only to `system:auth-delegator` (see `deploy/04-console-rbac.yaml`),
+  the list call gets a 403 from the API server, not an empty list — still
+  non-fatal, but it's an RBAC-denied error response, not "nothing found".

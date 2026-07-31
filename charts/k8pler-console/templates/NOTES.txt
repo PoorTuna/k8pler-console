@@ -13,8 +13,8 @@ Get the URL by running:
   kubectl get svc --namespace {{ .Release.Namespace }} {{ include "k8pler-console.fullname" . }} -w
 {{- else }}
 Access the console by running:
-  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "k8pler-console.fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
-  open http://localhost:{{ .Values.service.port }}
+  kubectl port-forward --namespace {{ .Release.Namespace }} svc/{{ include "k8pler-console.fullname" . }} 9000:{{ .Values.service.port }}
+  open http://localhost:9000
 {{- end }}
 
 {{- if eq .Values.auth.type "disabled" }}
