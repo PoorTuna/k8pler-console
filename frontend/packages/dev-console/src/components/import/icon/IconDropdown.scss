@@ -1,0 +1,19 @@
+.odc-icon-dropdown {
+  img.icon {
+    margin-right: var(--pf-v5-global--spacer--sm);
+  }
+
+  .pf-v5-c-dropdown__toggle-text {
+    display: flex;
+    align-items: center;
+  }
+
+  &__menu {
+    max-height: 300px;
+
+    li > a {
+      display: flex;
+      align-items: center;
+    }
+  }
+}

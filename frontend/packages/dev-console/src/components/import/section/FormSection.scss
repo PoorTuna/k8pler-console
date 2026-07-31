@@ -1,0 +1,8 @@
+.odc-form-section {
+  &__heading {
+    margin: 0;
+  }
+  &--extra-margin {
+    margin: var(--pf-v5-global--spacer--md) 0;
+  }
+}

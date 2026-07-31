@@ -1,0 +1,14 @@
+@import '../../../../../public/style/vars';
+
+.co-dashboard-body {
+  background-color: var(--pf-v5-global--BackgroundColor--200);
+  flex: 1 0 auto;
+  padding: $pf-v5-global-gutter;
+  @media (min-width: $pf-v5-global--breakpoint--xl) {
+    padding: $pf-v5-global-gutter--md;
+  }
+}
+
+.co-dashboard-grid {
+  grid-gap: 1rem;
+}

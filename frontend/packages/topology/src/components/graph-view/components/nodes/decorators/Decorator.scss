@@ -1,0 +1,21 @@
+.odc-decorator {
+  color: var(--pf-v5-global--Color--200);
+  transition: color 0.2s ease;
+  outline: none;
+
+  &__link:hover {
+    text-decoration: none;
+    .odc-m-drag-active {
+      pointer-events: none;
+    }
+  }
+
+  &__bg {
+    fill: var(--pf-v5-global--BackgroundColor--light-100);
+  }
+
+  &:hover,
+  &:active {
+    color: var(--pf-v5-global--link--Color--hover);
+  }
+}

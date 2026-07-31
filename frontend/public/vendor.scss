@@ -1,0 +1,23 @@
+// Config
+@import 'style/vars';
+
+// External dependencies (tilde tells Webpack not to use relative path).
+// Separate SCSS entrypoint here because some modules break source maps.
+@import '~openshift-logos-icon/style';
+@import '~@fortawesome/fontawesome-free/scss/fontawesome';
+@import '~@fortawesome/fontawesome-free/scss/solid';
+@import '~@patternfly/react-catalog-view-extension/dist/sass/variables';
+@import '~@patternfly/react-catalog-view-extension/dist/sass/catalog-item';
+@import '~@patternfly/react-catalog-view-extension/dist/sass/catalog-tile';
+@import '~@patternfly/react-catalog-view-extension/dist/sass/filter-side-panel';
+@import '~@patternfly/react-catalog-view-extension/dist/sass/properties-side-panel';
+@import '~@patternfly/react-catalog-view-extension/dist/sass/vertical-tabs';
+@import '~@patternfly/patternfly/sass-utilities/all';
+@import '~@patternfly/patternfly/patternfly-base';
+@import '~@patternfly/patternfly/components/all';
+@import '~@patternfly/patternfly/layouts/all';
+@import '~@patternfly/patternfly/patternfly-charts';
+@import '~@patternfly/patternfly/patternfly-addons';
+
+// External dependency extensions
+@import 'style/patternfly-sizing-extension';

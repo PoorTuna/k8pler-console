@@ -1,0 +1,40 @@
+[
+  {
+    "type": "console.flag/hookProvider",
+    "properties": {
+      "handler": { "$codeRef": "features.useDetectNodeMaintenance" }
+    }
+  },
+  {
+    "type": "console.navigation/resource-ns",
+    "properties": {
+      "id": "baremetal",
+      "section": "compute",
+      "name": "%metal3-plugin~Bare Metal Hosts%",
+      "insertBefore": "computeseparator",
+      "model": {
+        "kind": "BareMetalHost",
+        "version": "v1alpha1",
+        "group": "metal3.io"
+      }
+    },
+    "flags": {
+      "required": ["BAREMETAL", "METAL3"]
+    }
+  },
+  {
+    "type": "console.action/resource-provider",
+    "properties": {
+      "model": {
+        "version": "v1",
+        "kind": "Node"
+      },
+      "provider": {
+        "$codeRef": "nodeActions.useNodeMaintenanceActions"
+      }
+    },
+    "flags": {
+      "required": ["NODE_MAINTENANCE_ENABLED"]
+    }
+  }
+]

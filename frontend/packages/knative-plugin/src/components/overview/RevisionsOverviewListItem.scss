@@ -1,0 +1,8 @@
+.odc-revision-deployment-list {
+  padding: var(--pf-v5-global--spacer--md) var(--pf-v5-global--spacer--lg)
+    var(--pf-v5-global--spacer--sm);
+  &__pod {
+    width: var(--pf-v5-global--icon--FontSize--lg);
+    cursor: default;
+  }
+}
