@@ -1,5 +1,4 @@
 import { useResolvedExtensions } from '@console/dynamic-plugin-sdk';
-import { HELM_CHART_CATALOG_TYPE_ID } from '@console/helm-plugin/src/const';
 import {
   useGetAllDisabledSubCatalogs,
   isCatalogTypeEnabled,
@@ -7,6 +6,9 @@ import {
 } from '@console/shared';
 import { testHook } from '../../../../../__tests__/utils/hooks-utils';
 import { mockExtensions } from './catalogTypeExtensions.data';
+
+// Matches the former @console/helm-plugin/src/const HELM_CHART_CATALOG_TYPE_ID.
+const HELM_CHART_CATALOG_TYPE_ID = 'HelmChart';
 
 jest.mock('@console/dynamic-plugin-sdk/src/api/useResolvedExtensions', () => ({
   useResolvedExtensions: jest.fn(),

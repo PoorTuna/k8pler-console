@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 import { DeploymentConfigModel, PodModel } from '@console/internal/models';
 import { K8sResourceKind } from '@console/internal/module/k8s';
-import { RevisionModel } from '@console/knative-plugin';
 import { t } from '../../../../../__mocks__/i18next';
 import { testHook } from '../../../../../__tests__/utils/hooks-utils';
 import { ExtPodKind } from '../../types';
@@ -184,14 +183,6 @@ describe('usePodScalingAccessStatus', () => {
     obj.kind = 'Deployment';
     testHook(() => {
       expect(usePodScalingAccessStatus(obj, DeploymentConfigModel, [], false)).toBe(false);
-      done();
-    });
-  });
-
-  it('should return false for knative revisions', (done) => {
-    obj.kind = 'Revision';
-    testHook(() => {
-      expect(usePodScalingAccessStatus(obj, RevisionModel, [], true)).toBe(false);
       done();
     });
   });

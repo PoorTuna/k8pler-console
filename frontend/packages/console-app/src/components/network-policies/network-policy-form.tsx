@@ -14,7 +14,6 @@ import {
 } from '@patternfly/react-core';
 import * as _ from 'lodash';
 import { Trans, useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom-v5-compat';
 import { confirmModal } from '@console/internal/components/modals/confirm-modal';
 import {
   ButtonBar,
@@ -59,8 +58,6 @@ type NetworkPolicyFormProps = {
 export const NetworkPolicyForm: React.FC<NetworkPolicyFormProps> = ({ formData, onChange }) => {
   const { t } = useTranslation();
   const isOpenShift = useFlag(FLAGS.OPENSHIFT);
-
-  const { ns: namespace } = useParams();
 
   const normalizedK8S = networkPolicyNormalizeK8sResource(formData);
   const converted = networkPolicyFromK8sResource(normalizedK8S, t);

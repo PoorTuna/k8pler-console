@@ -7,7 +7,6 @@ import { LoadingBox } from '@console/internal/components/utils';
 import { EditorType } from '../../synced-editor/editor-toggle';
 import { useEditorType } from '../../synced-editor/useEditorType';
 import CodeEditorField from '../CodeEditorField';
-import DynamicFormField from '../DynamicFormField';
 import RadioGroupField from '../RadioGroupField';
 import SyncedEditorField from '../SyncedEditorField';
 
@@ -26,12 +25,14 @@ jest.mock('../../synced-editor/useEditorType', () => ({
 const mockUseEditorType = useEditorType as jest.Mock;
 const mockUseField = useField as jest.Mock;
 
+const DynamicFormField: React.FC<{ name: string }> = () => null;
+
 describe('SyncedEditorField', () => {
   type SyncedEditorFieldProps = React.ComponentProps<typeof SyncedEditorField>;
   let wrapper: ShallowWrapper<SyncedEditorFieldProps>;
 
   const mockEditors = {
-    form: <DynamicFormField name="formData" schema={{}} />,
+    form: <DynamicFormField name="formData" />,
     yaml: <CodeEditorField name="yamlData" showSamples />,
   };
 

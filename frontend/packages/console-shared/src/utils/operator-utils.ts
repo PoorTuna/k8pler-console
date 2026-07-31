@@ -19,7 +19,7 @@ export const getOperatorBackedServiceKindMap = (
   installedOperators: ClusterServiceVersionKind[],
 ): OperatorBackedServiceKindMap =>
   installedOperators
-    ? installedOperators.reduce((kindMap, csv) => {
+    ? installedOperators.reduce<OperatorBackedServiceKindMap>((kindMap, csv) => {
         (csv?.spec?.customresourcedefinitions?.owned || []).forEach((crd) => {
           if (!(crd.kind in kindMap)) {
             kindMap[crd.kind] = csv;
