@@ -34,7 +34,7 @@ WORKDIR /
 # doesn't require a root user.
 USER 1001
 
-CMD [ "/opt/bridge/bin/bridge", "--public-dir=/opt/bridge/static" ]
+ENTRYPOINT [ "/opt/bridge/bin/bridge", "--public-dir=/opt/bridge/static" ]
 
 LABEL \
         io.k8s.description="Kubernetes web console (k8pler-console), a de-OpenShift-ed fork of the OpenShift Console." \

@@ -1,0 +1,30 @@
+# One-off values for a first real smoke deploy on a single-node k3s LAN box:
+# auth disabled (no OIDC provider stood up yet), exposed via k3s's built-in
+# ServiceLB as a LoadBalancer Service (external IP = the node's LAN IP).
+
+replicaCount: 1
+
+image:
+  repository: poortuna/k8pler-console
+  tag: latest
+  pullPolicy: Always
+
+auth:
+  type: disabled
+  disabled:
+    staticBearerToken: "REPLACE_WITH_A_REAL_TOKEN"
+
+service:
+  type: LoadBalancer
+  port: 9000
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 384Mi
