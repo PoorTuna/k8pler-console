@@ -36,106 +36,6 @@
   {
     "type": "console.flag/model",
     "properties": {
-      "flag": "OPENSHIFT_BUILD",
-      "model": {
-        "group": "build.openshift.io",
-        "version": "v1",
-        "kind": "Build"
-      }
-    }
-  },
-  {
-    "type": "console.flag/model",
-    "properties": {
-      "flag": "OPENSHIFT_BUILDCONFIG",
-      "model": {
-        "group": "build.openshift.io",
-        "version": "v1",
-        "kind": "BuildConfig"
-      }
-    }
-  },
-  {
-    "type": "console.flag/model",
-    "properties": {
-      "model": {
-        "group": "apps.openshift.io",
-        "version": "v1",
-        "kind": "DeploymentConfig"
-      },
-      "flag": "OPENSHIFT_DEPLOYMENTCONFIG"
-    }
-  },
-  {
-    "type": "console.flag/model",
-    "properties": {
-      "model": {
-        "group": "image.openshift.io",
-        "version": "v1",
-        "kind": "ImageStream"
-      },
-      "flag": "OPENSHIFT_IMAGESTREAM"
-    }
-  },
-  {
-    "type": "console.flag/model",
-    "properties": {
-      "model": {
-        "group": "template.openshift.io",
-        "version": "v1",
-        "kind": "Template"
-      },
-      "flag": "OPENSHIFT_TEMPLATE"
-    }
-  },
-  {
-    "type": "console.flag/model",
-    "properties": {
-      "model": {
-        "group": "project.openshift.io",
-        "version": "v1",
-        "kind": "Project"
-      },
-      "flag": "OPENSHIFT_PROJECT"
-    }
-  },
-  {
-    "type": "console.flag/model",
-    "properties": {
-      "flag": "OPENSHIFT_USER_API",
-      "model": {
-        "group": "user.openshift.io",
-        "version": "v1",
-        "kind": "User"
-      }
-    }
-  },
-  {
-    "type": "console.flag/model",
-    "properties": {
-      "flag": "OPENSHIFT_GROUP_API",
-      "model": {
-        "group": "user.openshift.io",
-        "version": "v1",
-        "kind": "Group"
-      }
-    }
-  },
-  {
-    "type": "console.flag/model",
-    "properties": {
-      "flag": "OPENSHIFT_OAUTH_API",
-      "model": {
-        "group": "config.openshift.io",
-        "version": "v1",
-        "kind": "OAuth"
-      }
-    }
-  },
-
-  {
-    "type": "console.flag/model",
-    "properties": {
       "flag": "DEVWORKSPACE",
       "model": {
         "group": "workspace.devfile.io",
@@ -153,20 +53,6 @@
         "version": "v1alpha2",
         "kind": "DevWorkspace"
       }
-    }
-  },
-  {
-    "type": "console.page/resource/details",
-    "properties": {
-      "model": {
-        "group": "config.openshift.io",
-        "version": "v1",
-        "kind": "OAuth"
-      },
-      "component": { "$codeRef": "oauthConfigDetailsPage.default" }
-    },
-    "flags": {
-      "required": ["OPENSHIFT_OAUTH_API"]
     }
   },
   {
@@ -215,65 +101,7 @@
         "version": "v1",
         "kind": "Deployment"
       },
-      "provider": { "$codeRef": "actions.useCreateServiceBindingProvider" }
-    },
-    "flags": {
-      "required": ["ALLOW_SERVICE_BINDING"]
-    }
-  },
-  {
-    "type": "console.action/resource-provider",
-    "properties": {
-      "model": {
-        "group": "apps.openshift.io",
-        "version": "v1",
-        "kind": "DeploymentConfig"
-      },
-      "provider": { "$codeRef": "actions.useCreateServiceBindingProvider" }
-    },
-    "flags": {
-      "required": ["ALLOW_SERVICE_BINDING"]
-    }
-  },
-  {
-    "type": "console.action/resource-provider",
-    "properties": {
-      "model": {
-        "group": "serving.knative.dev",
-        "version": "v1",
-        "kind": "Service"
-      },
-      "provider": {
-        "$codeRef": "actions.useCreateServiceBindingProvider"
-      }
-    },
-    "flags": {
-      "required": ["ALLOW_SERVICE_BINDING"]
-    }
-  },
-  {
-    "type": "console.action/resource-provider",
-    "properties": {
-      "model": {
-        "group": "apps",
-        "version": "v1",
-        "kind": "Deployment"
-      },
       "provider": { "$codeRef": "actions.useDeploymentActionsProvider" }
-    }
-  },
-  {
-    "type": "console.action/resource-provider",
-    "properties": {
-      "model": {
-        "group": "apps.openshift.io",
-        "version": "v1",
-        "kind": "DeploymentConfig"
-      },
-      "provider": { "$codeRef": "actions.useDeploymentConfigActionsProvider" }
-    },
-    "flags": {
-      "required": ["OPENSHIFT_DEPLOYMENTCONFIG"]
     }
   },
   {
@@ -665,16 +493,6 @@
     "type": "console.navigation/section",
     "properties": {
       "perspective": "admin",
-      "id": "builds",
-      "name": "%console-app~Builds%",
-      "dataAttributes": { "data-quickstart-id": "qs-nav-builds" }
-    },
-    "flags": { "required": ["OPENSHIFT"] }
-  },
-  {
-    "type": "console.navigation/section",
-    "properties": {
-      "perspective": "admin",
       "id": "compute",
       "name": "%console-app~Compute%",
       "dataAttributes": { "data-quickstart-id": "qs-nav-compute" }
@@ -729,16 +547,15 @@
     "properties": {
       "perspective": "admin",
       "section": "home",
-      "id": "projects",
+      "id": "namespaces-home",
       "insertAfter": "dashboards",
-      "name": "%console-app~Projects%",
+      "name": "%console-app~Namespaces%",
       "model": {
-        "group": "project.openshift.io",
         "version": "v1",
-        "kind": "Project"
+        "kind": "Namespace"
       }
     },
-    "flags": { "required": ["OPENSHIFT"] }
+    "flags": { "required": ["CAN_LIST_NS"] }
   },
   {
     "type": "console.navigation/href",
@@ -746,7 +563,7 @@
       "perspective": "admin",
       "section": "home",
       "id": "search",
-      "insertAfter": "projects",
+      "insertAfter": "namespaces-home",
       "name": "%console-app~Search%",
       "href": "/search",
       "namespaced": true
@@ -809,24 +626,8 @@
     "properties": {
       "perspective": "admin",
       "section": "workloads",
-      "id": "deploymentconfigs",
-      "insertAfter": "deployments",
-      "name": "%console-app~DeploymentConfigs%",
-      "model": {
-        "group": "apps.openshift.io",
-        "version": "v1",
-        "kind": "DeploymentConfig"
-      }
-    },
-    "flags": { "required": ["OPENSHIFT_DEPLOYMENTCONFIG"] }
-  },
-  {
-    "type": "console.navigation/resource-ns",
-    "properties": {
-      "perspective": "admin",
-      "section": "workloads",
       "id": "statefulsets",
-      "insertAfter": "deploymentconfigs",
+      "insertAfter": "deployments",
       "name": "%console-app~StatefulSets%",
       "model": {
         "group": "apps",
@@ -995,24 +796,8 @@
     "properties": {
       "perspective": "admin",
       "section": "networking",
-      "id": "routes",
-      "insertAfter": "services",
-      "name": "%console-app~Routes%",
-      "model": {
-        "group": "route.openshift.io",
-        "version": "v1",
-        "kind": "Route"
-      }
-    },
-    "flags": { "required": ["OPENSHIFT"] }
-  },
-  {
-    "type": "console.navigation/resource-ns",
-    "properties": {
-      "perspective": "admin",
-      "section": "networking",
       "id": "ingresses",
-      "insertAfter": "routes",
+      "insertAfter": "services",
       "name": "%console-app~Ingresses%",
       "model": {
         "group": "networking.k8s.io",
@@ -1143,53 +928,6 @@
     }
   },
   {
-    "type": "console.navigation/resource-ns",
-    "properties": {
-      "perspective": "admin",
-      "section": "builds",
-      "id": "buildconfigs",
-      "name": "%console-app~BuildConfigs%",
-      "model": {
-        "group": "build.openshift.io",
-        "version": "v1",
-        "kind": "BuildConfig"
-      }
-    },
-    "flags": { "required": ["OPENSHIFT_BUILDCONFIG"] }
-  },
-  {
-    "type": "console.navigation/resource-ns",
-    "properties": {
-      "perspective": "admin",
-      "section": "builds",
-      "id": "builds",
-      "insertAfter": "buildconfigs",
-      "name": "%console-app~Builds%",
-      "model": {
-        "group": "build.openshift.io",
-        "version": "v1",
-        "kind": "Build"
-      }
-    },
-    "flags": { "required": ["OPENSHIFT_BUILD"] }
-  },
-  {
-    "type": "console.navigation/resource-ns",
-    "properties": {
-      "perspective": "admin",
-      "section": "builds",
-      "id": "imagestreams",
-      "insertAfter": "builds",
-      "name": "%console-app~ImageStreams%",
-      "startsWith": ["imagestreamtags"],
-      "model": {
-        "group": "image.openshift.io",
-        "version": "v1",
-        "kind": "ImageStream"
-      }
-    }
-  },
-  {
     "type": "console.navigation/resource-cluster",
     "properties": {
       "perspective": "admin",
@@ -1294,43 +1032,11 @@
     "flags": { "required": ["MACHINE_CONFIG"] }
   },
   {
-    "type": "console.navigation/resource-cluster",
-    "properties": {
-      "perspective": "admin",
-      "section": "usermanagement",
-      "id": "users",
-      "name": "%console-app~Users%",
-      "model": {
-        "group": "user.openshift.io",
-        "version": "v1",
-        "kind": "User"
-      }
-    },
-    "flags": { "required": ["OPENSHIFT", "OPENSHIFT_USER_API", "CAN_LIST_USERS"] }
-  },
-  {
-    "type": "console.navigation/resource-cluster",
-    "properties": {
-      "perspective": "admin",
-      "section": "usermanagement",
-      "id": "groups",
-      "insertAfter": "users",
-      "name": "%console-app~Groups%",
-      "model": {
-        "group": "user.openshift.io",
-        "version": "v1",
-        "kind": "Group"
-      }
-    },
-    "flags": { "required": ["OPENSHIFT", "OPENSHIFT_GROUP_API", "CAN_LIST_GROUPS"] }
-  },
-  {
     "type": "console.navigation/resource-ns",
     "properties": {
       "perspective": "admin",
       "section": "usermanagement",
       "id": "serviceaccounts",
-      "insertAfter": "groups",
       "name": "%console-app~ServiceAccounts%",
       "model": {
         "version": "v1",
@@ -1388,27 +1094,12 @@
     "flags": { "required": ["CLUSTER_VERSION"] }
   },
   {
-    "type": "console.navigation/resource-cluster",
-    "properties": {
-      "perspective": "admin",
-      "section": "administration",
-      "id": "namespaces",
-      "insertAfter": "clustersettings",
-      "name": "%console-app~Namespaces%",
-      "model": {
-        "version": "v1",
-        "kind": "Namespace"
-      }
-    },
-    "flags": { "required": ["CAN_LIST_NS"] }
-  },
-  {
     "type": "console.navigation/resource-ns",
     "properties": {
       "perspective": "admin",
       "section": "administration",
       "id": "resourcequotas",
-      "insertAfter": "namespaces",
+      "insertAfter": "clustersettings",
       "name": "%console-app~ResourceQuotas%",
       "startsWith": ["clusterresourcequotas"],
       "model": {

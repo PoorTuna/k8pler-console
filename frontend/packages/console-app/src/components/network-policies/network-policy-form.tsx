@@ -29,7 +29,6 @@ import { k8sCreate, NetworkPolicyKind } from '@console/internal/module/k8s';
 import { useClusterNetworkFeatures } from '@console/internal/module/k8s/network';
 import { FLAGS, YellowExclamationTriangleIcon } from '@console/shared';
 import { useFlag } from '@console/shared/src/hooks/flag';
-import NADsSelector from './NADsSelector';
 import { NetworkPolicyConditionalSelector } from './network-policy-conditional-selector';
 import {
   isNetworkPolicyConversionError,
@@ -252,13 +251,6 @@ export const NetworkPolicyForm: React.FC<NetworkPolicyFormProps> = ({ formData, 
             required
           />
         </div>
-        {isMulti && (
-          <NADsSelector
-            namespace={namespace as string}
-            networkPolicy={networkPolicy}
-            onPolicyChange={onPolicyChange}
-          />
-        )}
         <div className="form-group co-create-networkpolicy__podselector">
           <NetworkPolicyConditionalSelector
             selectorType="pod"
