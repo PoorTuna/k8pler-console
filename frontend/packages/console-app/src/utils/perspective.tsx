@@ -7,15 +7,12 @@ export const icon: ResolvedExtension<Perspective>['properties']['icon'] = { defa
 export const getLandingPageURL: ResolvedExtension<Perspective>['properties']['landingPageURL'] = (
   flags,
 ) => {
-  if (!flags[FLAGS.OPENSHIFT]) {
-    return '/search';
-  }
   return flags[FLAGS.CAN_LIST_NS] && flags[FLAGS.MONITORING]
     ? '/dashboards'
-    : '/k8s/cluster/projects';
+    : '/k8s/cluster/namespaces';
 };
 
 export const getImportRedirectURL: ResolvedExtension<
   Perspective
 >['properties']['importRedirectURL'] = (namespace) =>
-  `/k8s/cluster/projects/${namespace}/workloads`;
+  `/k8s/cluster/namespaces/${namespace}`;
