@@ -1,4 +1,4 @@
-# OpenShift Internationalization
+# Internationalization
 
 #### i18next and react-i18next
 
