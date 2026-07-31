@@ -1,4 +1,12 @@
-# k8pler-console
+<p align="center">
+  <img src="charts/k8pler-console/files/logo.png" alt="k8pler-console" width="360">
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-blue.svg"></a>
+  <a href="https://kubernetes.io"><img alt="Kubernetes 1.24+" src="https://img.shields.io/badge/kubernetes-1.24%2B-326ce5.svg?logo=kubernetes&logoColor=white"></a>
+  <a href="charts/k8pler-console"><img alt="Helm chart" src="https://img.shields.io/badge/helm-chart-0F1689.svg?logo=helm&logoColor=white"></a>
+</p>
 
 A web console for plain Kubernetes clusters, forked from the [OpenShift
 Console](https://github.com/openshift/console) (`release-4.16`, the "Bridge"
@@ -8,12 +16,13 @@ Where the upstream project assumes an OpenShift OAuth server, Projects,
 Routes, ImageStreams, BuildConfigs, DeploymentConfigs, and OLM/OperatorHub,
 this fork runs against a stock, unmodified Kubernetes API server and
 authenticates through OIDC — Dex, Keycloak, or any other OIDC-compliant
-identity provider.
+identity provider. The upstream console architecture is otherwise untouched:
+a Go backend ("the bridge") that proxies the Kubernetes API and serves the
+frontend, plus a React/TypeScript single-page app. See
+[`NOTICE.md`](NOTICE.md) for exactly which upstream commit this was forked
+from and the license.
 
-The upstream console architecture is otherwise untouched: a Go backend
-("the bridge") that proxies the Kubernetes API and serves the frontend, plus
-a React/TypeScript single-page app. See [`NOTICE.md`](NOTICE.md) for exactly
-which upstream commit this was forked from and the license.
+![k8pler-console](docs/screenshot.png)
 
 ## What's different from upstream
 
@@ -33,8 +42,7 @@ which upstream commit this was forked from and the license.
 
 ## Quick start
 
-The fastest way to get a console running against a real cluster is the Helm
-chart:
+Helm chart:
 
 ```bash
 helm install k8pler-console ./charts/k8pler-console \
@@ -43,13 +51,12 @@ kubectl port-forward svc/k8pler-console 9000:80
 open http://localhost:9000
 ```
 
-See [`charts/k8pler-console/README.md`](charts/k8pler-console/README.md) for
-the full set of example values (bundled-Dex quick start, production with an
-external OIDC provider and TLS ingress) and configuration reference.
+Full example values (bundled-Dex quick start, production with an external
+OIDC provider and TLS ingress) and configuration reference:
+[`charts/k8pler-console/README.md`](charts/k8pler-console/README.md).
 
-Prefer plain manifests over Helm? See [`deploy/`](deploy/README.md) for a
-hand-written set (Dex + console + RBAC) you can read top to bottom and
-`kubectl apply -f` directly.
+Plain manifests instead of Helm: [`deploy/`](deploy/README.md) — a
+hand-written Dex + console + RBAC set, `kubectl apply -f` directly.
 
 ## Architecture
 
@@ -120,10 +127,9 @@ export KUBECONFIG=/path/to/kubeconfig
   -base-address http://localhost:9000
 ```
 
-The console will be running at [localhost:9000](http://localhost:9000). Full
-flag reference, including the `disabled`-auth path for quick local dev
-without any OIDC provider at all, is in
-[`docs/RUNNING-ON-KUBERNETES.md`](docs/RUNNING-ON-KUBERNETES.md).
+Runs at [localhost:9000](http://localhost:9000). Full flag reference,
+including the `disabled`-auth path for local dev with no OIDC provider, is
+in [`docs/RUNNING-ON-KUBERNETES.md`](docs/RUNNING-ON-KUBERNETES.md).
 
 ### Frontend interactive development
 
@@ -134,7 +140,7 @@ yarn run dev        # watches and recompiles on change
 ```
 
 Set `HOT_RELOAD=false` to disable hot reloading. If changes stop being
-picked up, you likely need to raise `fs.inotify.max_user_watches` — see the
+picked up, raise `fs.inotify.max_user_watches` — see the
 [webpack docs](https://webpack.js.org/configuration/watch/#not-enough-watchers).
 
 ## Testing
