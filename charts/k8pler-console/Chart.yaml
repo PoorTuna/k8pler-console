@@ -5,7 +5,7 @@ description: >-
   OpenShift Console (release-4.16 UI), authenticating via OIDC. Optionally
   bundles a Dex OIDC provider for quick starts.
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "4.16.0"
 kubeVersion: ">=1.24.0-0"
 home: https://github.com/PoorTuna/k8pler-console

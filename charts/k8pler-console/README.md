@@ -13,7 +13,7 @@ Kubernetes clusters — with OIDC authentication.
 | `system:auth-delegator` `ClusterRoleBinding` | `serviceAccount.bindAuthDelegator` | `true` |
 | Console `Ingress` | `ingress.enabled` | `false` |
 | OIDC client secret `Secret` | `auth.oidc.clientSecret` set and no `auth.oidc.existingSecret` | — |
-| Custom logo `ConfigMap` | `console.customLogo` | — |
+| Custom logo `ConfigMap` (bundled k8pler mark by default) | `console.customLogo.enabled` | `true` |
 | Bundled Dex (`Deployment`, `Service`, config `Secret`, RBAC) | `dex.enabled` | `false` |
 | Dex `Ingress` | `dex.ingress.enabled` | `false` |
 
@@ -74,6 +74,8 @@ All parameters are documented inline in [`values.yaml`](values.yaml). Key ones:
 |---|---|---|
 | `console.branding` | Masthead branding (`okd`, `openshift`, `ocp`, ...) | `okd` |
 | `console.customProductName` | Overrides the branded product name | `k8pler` |
+| `console.customLogo.enabled` | Replace the masthead logo. `false` falls back to the stock `console.branding` mark | `true` |
+| `console.customLogo.data` | Base64-encoded logo override; empty uses the bundled `files/logo.png` | — |
 | `console.userSettingsLocation` | `localstorage` avoids needing the OpenShift-only `user.openshift.io` API | `localstorage` |
 | `console.baseAddress` | Public URL; auto-derived from `ingress.host` when unset | — |
 | `console.plugins` | Map of dynamic-plugin `name: endpoint` | `{}` |

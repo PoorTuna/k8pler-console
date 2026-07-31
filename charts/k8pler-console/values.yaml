@@ -14,9 +14,15 @@ console:
   # -- One of: okd, openshift, ocp, online, dedicated, azure, rosa
   branding: okd
   customProductName: "k8pler"
-  # -- Base64/plain PEM content for a custom masthead logo. Rendered to a
-  # -- ConfigMap and mounted when set.
-  customLogo: ""
+  customLogo:
+    # -- Replace the masthead logo (which otherwise falls back to the
+    # -- OKD/OpenShift/etc. mark selected by console.branding) with the
+    # -- bundled k8pler logo (files/logo.png), or with customLogo.data below.
+    enabled: true
+    # -- Base64-encoded logo image (any format Go's net/http content-sniffing
+    # -- recognizes, e.g. PNG/SVG/JPEG). Overrides the bundled logo when set.
+    # -- Generate with: base64 -w0 your-logo.png
+    data: ""
   # -- Public base URL the console is reachable at, e.g. https://console.example.com
   # -- Auto-derived from ingress.host + tls when left empty.
   baseAddress: ""

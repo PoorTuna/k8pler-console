@@ -44,7 +44,7 @@ spec:
             {{- if .Values.console.customProductName }}
             - --custom-product-name={{ .Values.console.customProductName }}
             {{- end }}
-            {{- if .Values.console.customLogo }}
+            {{- if .Values.console.customLogo.enabled }}
             - --custom-logo-file=/etc/console/logo/logo
             {{- end }}
             - --user-settings-location={{ .Values.console.userSettingsLocation }}
@@ -128,7 +128,7 @@ spec:
               mountPath: /etc/console/oidc
               readOnly: true
             {{- end }}
-            {{- if .Values.console.customLogo }}
+            {{- if .Values.console.customLogo.enabled }}
             - name: custom-logo
               mountPath: /etc/console/logo
               readOnly: true
@@ -154,7 +154,7 @@ spec:
               - key: {{ .Values.auth.oidc.existingSecretKey | default "client-secret" }}
                 path: client-secret
         {{- end }}
-        {{- if .Values.console.customLogo }}
+        {{- if .Values.console.customLogo.enabled }}
         - name: custom-logo
           configMap:
             name: {{ include "k8pler-console.fullname" . }}-logo
