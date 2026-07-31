@@ -17,7 +17,6 @@ import { HPAOverview } from './hpa-overview';
 import { NetworkingOverview } from './networking-overview';
 import { PodsOverview } from './pods-overview';
 import { resourceOverviewPages } from './resource-overview-pages';
-import { ManagedByOperatorLink } from '../utils/managed-by';
 import { useTranslation } from 'react-i18next';
 import { ResourceOverviewDetails } from './resource-overview-details';
 
@@ -32,7 +31,6 @@ export const OverviewDetailsResourcesTab: React.SFC<OverviewDetailsResourcesTabP
 
   return (
     <div className="overview__sidebar-pane-body">
-      <ManagedByOperatorLink obj={item.obj} />
       <PodsOverview obj={obj} buildConfigData={{ loaded, loadError, buildConfigs }} />
       <BuildOverview buildConfigs={buildConfigs} />
       <HPAOverview hpas={hpas} />

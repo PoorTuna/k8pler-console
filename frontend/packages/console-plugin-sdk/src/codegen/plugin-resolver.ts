@@ -68,7 +68,7 @@ export const getMonorepoRootDir = () => {
   return findUp.sync(
     (currentDir) => {
       return fs.existsSync(path.join(currentDir, 'package.json'))
-        ? readPkg.sync({ cwd: currentDir, normalize: true }).name === 'openshift-console' &&
+        ? readPkg.sync({ cwd: currentDir, normalize: true }).name === 'k8pler-console' &&
             currentDir
         : undefined;
     },

@@ -10,11 +10,7 @@ import {
   K8sResourceCommon,
   HorizontalPodAutoscalerKind,
 } from '@console/internal/module/k8s';
-import {
-  ClusterServiceVersionModel,
-  ClusterServiceVersionKind,
-} from '@console/operator-lifecycle-manager';
-import { deleteHPAModal, isHelmResource, isOperatorBackedService } from '@console/shared';
+import { deleteHPAModal, isHelmResource } from '@console/shared';
 import { doesHpaMatch } from '@console/shared/src/utils/hpa-utils';
 import { ResourceActionFactory } from './common-factory';
 
@@ -84,7 +80,6 @@ export const getHpaActions = (
 
 type DeploymentActionExtraResources = {
   hpas: HorizontalPodAutoscalerKind[];
-  csvs: ClusterServiceVersionKind[];
 };
 
 export const useHPAActions = (kindObj: K8sKind, resource: K8sResourceKind) => {
@@ -98,12 +93,6 @@ export const useHPAActions = (kindObj: K8sKind, resource: K8sResourceKind) => {
         namespace,
         optional: true,
       },
-      csvs: {
-        isList: true,
-        kind: referenceForModel(ClusterServiceVersionModel),
-        namespace,
-        optional: true,
-      },
     }),
     [namespace],
   );
@@ -113,11 +102,7 @@ export const useHPAActions = (kindObj: K8sKind, resource: K8sResourceKind) => {
     resource,
   ]);
 
-  const supportsHPA = React.useMemo(
-    () =>
-      !(isHelmResource(resource) || isOperatorBackedService(resource, extraResources.csvs.data)),
-    [extraResources.csvs.data, resource],
-  );
+  const supportsHPA = React.useMemo(() => !isHelmResource(resource), [resource]);
 
   const result = React.useMemo<[Action[], HorizontalPodAutoscalerKind[]]>(() => {
     return [supportsHPA ? getHpaActions(kindObj, resource, relatedHPAs) : [], relatedHPAs];

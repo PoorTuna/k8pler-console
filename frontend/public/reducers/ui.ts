@@ -148,12 +148,6 @@ export default (state: UIState, action: UIAction): UIState => {
       return state.setIn(['utilizationDuration', 'endTime'], action.payload.endTime);
     case ActionType.SetShowOperandsInAllNamespaces:
       return state.set('showOperandsInAllNamespaces', action.payload.value);
-    case ActionType.SetDeprecatedPackage:
-      return state.setIn(['deprecatedOperator', 'package'], action.payload.value);
-    case ActionType.SetDeprecatedChannel:
-      return state.setIn(['deprecatedOperator', 'channel'], action.payload.value);
-    case ActionType.SetDeprecatedVersion:
-      return state.setIn(['deprecatedOperator', 'version'], action.payload.value);
     default:
       break;
   }

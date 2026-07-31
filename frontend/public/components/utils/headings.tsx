@@ -41,7 +41,6 @@ import {
   K8sResourceKindReference,
   referenceForModel,
 } from '../../module/k8s';
-import { ManagedByOperatorLink } from './managed-by';
 
 export const ResourceItemDeleting = () => {
   const { t } = useTranslation();
@@ -179,9 +178,6 @@ export const PageHeading = connectToModel((props: PageHeadingProps) => {
                 {kind && <ResourceIcon kind={kind} className="co-m-resource-icon--lg" />}{' '}
                 <span data-test-id="resource-title" className="co-resource-item__resource-name">
                   {resourceTitle}
-                  {data?.metadata?.namespace && data?.metadata?.ownerReferences?.length && (
-                    <ManagedByOperatorLink obj={data} />
-                  )}
                 </span>
                 {resourceStatus && (
                   <ResourceStatus additionalClassNames="hidden-xs">

@@ -1,24 +1,12 @@
 import * as _ from 'lodash-es';
 import * as React from 'react';
-import { Alert } from '@patternfly/react-core';
 import { Trans, useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom-v5-compat';
 
 import { createModalLauncher, ModalTitle, ModalBody, ModalSubmitFooter } from '../factory/modal';
 import { resourceListPathFromModel, withHandlePromise, HandlePromiseProps } from '../utils';
-import {
-  k8sKill,
-  k8sList,
-  referenceForOwnerRef,
-  K8sResourceKind,
-  K8sModel,
-  K8sResourceCommon,
-  OwnerReference,
-} from '../../module/k8s/';
+import { k8sKill, K8sResourceKind, K8sModel, K8sResourceCommon } from '../../module/k8s/';
 import { YellowExclamationTriangleIcon } from '@console/shared';
-import { ClusterServiceVersionModel } from '@console/operator-lifecycle-manager/src/models';
-import { findOwner } from '../../module/k8s/managed-by';
-import { ResourceLink } from '../utils/resource-link';
 import { LocationDescriptor } from 'history';
 
 //Modal for resource deletion and allows cascading deletes if propagationPolicy is provided for the enum
@@ -26,7 +14,6 @@ export const DeleteModal = withHandlePromise((props: DeleteModalProps & HandlePr
   const navigate = useNavigate();
   const [isChecked, setIsChecked] = React.useState(true);
   const [isDeleteOtherResourcesChecked, setIsDeleteOtherResourcesChecked] = React.useState(true);
-  const [owner, setOwner] = React.useState<OwnerReference>(undefined);
 
   const { t } = useTranslation();
 
@@ -57,23 +44,6 @@ export const DeleteModal = withHandlePromise((props: DeleteModalProps & HandlePr
       }
     });
   };
-
-  React.useEffect(() => {
-    const { resource } = props;
-    const namespace = resource?.metadata?.namespace;
-    if (!namespace || !resource?.metadata?.ownerReferences?.length) {
-      return;
-    }
-    k8sList(ClusterServiceVersionModel, { ns: namespace })
-      .then((data) => {
-        const resourceOwner = findOwner(props.resource, data);
-        resourceOwner && setOwner(resourceOwner);
-      })
-      .catch((e) => {
-        // eslint-disable-next-line no-console
-        console.error('Could not fetch CSVs', e);
-      });
-  });
 
   const { kind, resource, message, errorMessage } = props;
   return (
@@ -127,28 +97,6 @@ export const DeleteModal = withHandlePromise((props: DeleteModalProps & HandlePr
                 {t('public~Delete other resources created by console')}
               </label>
             </div>
-          )}
-          {owner && (
-            <Alert
-              className="co-alert co-alert--margin-top"
-              isInline
-              variant="warning"
-              title={t('public~Managed resource')}
-            >
-              <Trans t={t} ns="public">
-                This resource is managed by{' '}
-                <ResourceLink
-                  className="modal__inline-resource-link"
-                  inline
-                  kind={referenceForOwnerRef(owner)}
-                  name={owner.name}
-                  namespace={resource.metadata.namespace}
-                  onClick={props.cancel}
-                />{' '}
-                and any modifications may be overwritten. Edit the managing resource to preserve
-                changes.
-              </Trans>
-            </Alert>
           )}
         </div>
       </ModalBody>

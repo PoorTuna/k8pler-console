@@ -16,7 +16,6 @@ import {
   referenceFor,
   modelFor,
 } from '@console/internal/module/k8s';
-import { ServiceModel as KnativeServiceModel } from '@console/knative-plugin';
 import { STORAGE_PREFIX, USERSETTINGS_PREFIX } from '../../constants';
 import { useUserSettingsCompatibility } from '../../hooks/useUserSettingsCompatibility';
 
@@ -34,7 +33,6 @@ const addHealthChecksRefs = [
   referenceForModel(DeploymentModel),
   referenceForModel(DaemonSetModel),
   referenceForModel(StatefulSetModel),
-  referenceForModel(KnativeServiceModel),
 ];
 
 const HealthChecksAlert: React.FC<HealthChecksAlertProps> = ({ resource }) => {

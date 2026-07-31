@@ -13,10 +13,6 @@ import { useNavigate } from 'react-router-dom-v5-compat';
 import { subscribeToExtensions } from '@console/plugin-sdk/src/api/pluginSubscriptionService';
 import { KebabActions, isKebabActions } from '@console/plugin-sdk/src/typings/kebab-actions';
 import Popper from '@console/shared/src/components/popper/Popper';
-import {
-  HelmChartRepositoryModel,
-  ProjectHelmChartRepositoryModel,
-} from '@console/helm-plugin/src/models';
 import { impersonateStateToProps, ImpersonateKind } from '@console/dynamic-plugin-sdk';
 import {
   annotationsModalLauncher,
@@ -36,7 +32,6 @@ import {
   K8sKind,
   K8sResourceKind,
   K8sResourceKindReference,
-  referenceFor,
   referenceForModel,
   VolumeSnapshotKind,
 } from '../../module/k8s';
@@ -300,16 +295,6 @@ const kebabFactory: KebabFactory = {
       case DeploymentModel.kind:
       case DeploymentConfigModel.kind:
         href = `${resourceObjPath(obj, kind.crd ? referenceForModel(kind) : kind.kind)}/form`;
-        break;
-      case HelmChartRepositoryModel.kind:
-        href = `/k8s/cluster/helmchartrepositories/${obj.metadata.name}/form?kind=${referenceFor(
-          obj,
-        )}`;
-        break;
-      case ProjectHelmChartRepositoryModel.kind:
-        href = `/ns/${obj.metadata.namespace}/helmchartrepositories/${
-          obj.metadata.name
-        }/form?kind=${referenceFor(obj)}`;
         break;
       default:
         href = `${resourceObjPath(obj, kind.crd ? referenceForModel(kind) : kind.kind)}/yaml`;

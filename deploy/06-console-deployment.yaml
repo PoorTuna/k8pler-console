@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8pler-console
+  namespace: k8pler-console
+  labels:
+    app: k8pler-console
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: k8pler-console
+  template:
+    metadata:
+      labels:
+        app: k8pler-console
+    spec:
+      serviceAccountName: k8pler-console
+      containers:
+        - name: console
+          image: k8pler-console:latest
+          args:
+            - --k8s-mode=in-cluster
+            - --user-auth=oidc
+            - --user-auth-oidc-issuer-url=https://dex.k8pler.example.com
+            - --user-auth-oidc-client-id=console
+            - --user-auth-oidc-client-secret-file=/etc/console/oidc/client-secret
+            - --user-settings-location=localstorage
+            - --base-address=https://console.k8pler.example.com
+            - --listen=http://0.0.0.0:9000
+            - --branding=okd
+            - --custom-product-name=k8pler
+          ports:
+            - name: http
+              containerPort: 9000
+          volumeMounts:
+            - name: oidc-client-secret
+              mountPath: /etc/console/oidc
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+      volumes:
+        - name: oidc-client-secret
+          secret:
+            secretName: console-oidc-client
+            items:
+              - key: client-secret
+                path: client-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8pler-console
+  namespace: k8pler-console
+spec:
+  selector:
+    app: k8pler-console
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

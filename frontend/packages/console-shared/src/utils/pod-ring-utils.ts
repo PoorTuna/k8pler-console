@@ -11,7 +11,6 @@ import {
   SelfSubjectAccessReviewKind,
   HorizontalPodAutoscalerKind,
 } from '@console/internal/module/k8s';
-import { RevisionModel } from '@console/knative-plugin';
 import { AllPodStatus } from '../constants';
 import { ExtPodKind } from '../types';
 import { checkPodEditAccess, getPodStatus } from './pod-utils';
@@ -141,26 +140,6 @@ export const podRingLabel = (
       podRingLabelData.title = titleData.title;
       podRingLabelData.subTitle = titleData.subTitle;
       podRingLabelData.longSubtitle = titleData.longSubtitle;
-      break;
-    case RevisionModel.kind:
-      currentPodCount = (obj.status?.readyReplicas || 0) + failedPodCount;
-      desiredPodCount = obj.spec?.replicas;
-      isPending = isPendingPods(pods, currentPodCount, desiredPodCount);
-      if (!isPending && !desiredPodCount) {
-        podRingLabelData.title = t('console-shared~Autoscaled');
-        podRingLabelData.subTitle = t('console-shared~to 0');
-        podRingLabelData.reversed = true;
-        break;
-      }
-      if (isPending) {
-        podRingLabelData.title = '0';
-        podRingLabelData.subTitle = t('console-shared~Scaling to {{podSubTitle}}', {
-          podSubTitle: desiredPodCount,
-        });
-      } else {
-        podRingLabelData.title = currentPodCount;
-        podRingLabelData.subTitle = podKindString(currentPodCount);
-      }
       break;
     case PodModel.kind:
     case JobModel.kind:

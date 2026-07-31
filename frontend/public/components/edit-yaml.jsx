@@ -28,20 +28,17 @@ import { downloadYaml } from '@console/shared/src/components/editor/yaml-downloa
 import { isYAMLTemplate, getImpersonate } from '@console/dynamic-plugin-sdk';
 import { useResolvedExtensions } from '@console/dynamic-plugin-sdk/src/api/useResolvedExtensions';
 import { connectToFlags } from '../reducers/connectToFlags';
-import { errorModal, managedResourceSaveModal } from './modals';
+import { errorModal } from './modals';
 import { checkAccess, Firehose, Loading, LoadingBox, PageHeading, resourceObjPath } from './utils';
 import {
   referenceForModel,
   k8sCreate,
   k8sUpdate,
-  k8sList,
   referenceFor,
   groupVersionFor,
 } from '../module/k8s';
 import { ConsoleYAMLSampleModel } from '../models';
 import { getYAMLTemplates } from '../models/yaml-templates';
-import { findOwner } from '../module/k8s/managed-by';
-import { ClusterServiceVersionModel } from '@console/operator-lifecycle-manager/src/models';
 import { definitionFor } from '../module/k8s/swagger';
 import { ImportYAMLResults } from './import-yaml-results';
 
@@ -113,7 +110,6 @@ const EditYAMLInner = (props) => {
   const [stale, setStale] = React.useState(false);
   const [sampleObj, setSampleObj] = React.useState(props.sampleObj);
   const [showSidebar, setShowSidebar] = React.useState(!!create);
-  const [owner, setOwner] = React.useState(null);
   const [notAllowed, setNotAllowed] = React.useState();
   const [displayResults, setDisplayResults] = React.useState();
   const [resourceObjects, setResourceObjects] = React.useState();
@@ -270,29 +266,12 @@ const EditYAMLInner = (props) => {
     });
   };
 
-  const loadCSVs = React.useCallback(() => {
-    const namespace = props.obj?.metadata?.namespace;
-    if (create || !namespace || !props.obj?.metadata?.ownerReferences?.length) {
-      return;
-    }
-    k8sList(ClusterServiceVersionModel, { ns: namespace })
-      .then((csvList) => {
-        const own = findOwner(props.obj, csvList);
-        setOwner(own);
-      })
-      .catch((e) => {
-        // eslint-disable-next-line no-console
-        console.error('Could not fetch CSVs', e);
-      });
-  }, [create, props.obj]);
-
   React.useEffect(() => {
     if (props.error) {
       handleError(props.error);
     }
     loadYaml();
-    loadCSVs();
-  }, [loadCSVs, loadYaml, props.error]);
+  }, [loadYaml, props.error]);
 
   const prevProps = React.useRef(props);
 
@@ -499,18 +478,9 @@ const EditYAMLInner = (props) => {
         return;
       }
 
-      if (owner) {
-        managedResourceSaveModal({
-          kind: obj.kind,
-          resource: obj,
-          onSubmit: () => updateYAML(obj),
-          owner,
-        });
-        return;
-      }
     }
     updateYAML(obj);
-  }, [create, owner, t, updateYAML, validate, onSave, props.obj]);
+  }, [create, t, updateYAML, validate, onSave, props.obj]);
 
   const save = () => {
     setErrors([]);

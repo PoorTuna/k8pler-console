@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import useCloudShellAvailable from '@console/webterminal-plugin/src/components/cloud-shell/useCloudShellAvailable';
 import { MARKDOWN_COPY_BUTTON_ID, MARKDOWN_EXECUTE_BUTTON_ID, MARKDOWN_SNIPPET_ID } from './const';
 
 import './showdown-extension.scss';
 
 const useInlineExecuteCommandShowdownExtension = () => {
   const { t } = useTranslation();
-  const showExecuteButton = useCloudShellAvailable();
+  // No Web Terminal (webterminal-plugin) in this fork -- there is no
+  // terminal to execute snippets into, so the button never renders.
+  const showExecuteButton = false;
   return useMemo(
     () => ({
       type: 'lang',

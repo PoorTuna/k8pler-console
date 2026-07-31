@@ -1,6 +1,15 @@
 import * as _ from 'lodash';
 import { K8sResourceKind } from '@console/internal/module/k8s';
-import { ClusterServiceVersionKind } from '@console/operator-lifecycle-manager/src';
+
+// Minimal shape of an OLM ClusterServiceVersion, kept local so this utility
+// does not depend on OLM being installed/present in the console build.
+export type ClusterServiceVersionKind = K8sResourceKind & {
+  spec?: {
+    customresourcedefinitions?: {
+      owned?: { kind: string }[];
+    };
+  };
+};
 
 export type OperatorBackedServiceKindMap = {
   [name: string]: ClusterServiceVersionKind;

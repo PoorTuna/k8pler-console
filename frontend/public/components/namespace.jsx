@@ -88,7 +88,6 @@ import { RoleBindingsPage } from './RBAC';
 import { Bar, Area, PROMETHEUS_BASE_PATH } from './graphs';
 import { flagPending } from '../reducers/features';
 import { OpenShiftGettingStarted } from './start-guide';
-import { OverviewListPage } from './overview';
 import {
   getNamespaceDashboardConsoleLinks,
   ProjectDashboard,
@@ -1137,7 +1136,6 @@ export const ProjectsDetailsPage = (props) => {
           component: NamespaceDetails,
         },
         navFactory.editYaml(),
-        navFactory.workloads(OverviewListPage),
         navFactory.roles(RolesPage),
       ]}
     />

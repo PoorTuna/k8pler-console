@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { DeleteResourceAction } from '@console/dev-console/src/actions/context-menu';
 import { Action } from '@console/dynamic-plugin-sdk/src';
 import { DeploymentKind, referenceFor } from '@console/internal/module/k8s';
 import { useK8sModel } from '@console/shared/src/hooks/useK8sModel';
@@ -28,9 +27,7 @@ export const useDeploymentActionsProvider = (resource: DeploymentKind) => {
       CommonActionFactory.ModifyLabels(kindObj, resource),
       CommonActionFactory.ModifyAnnotations(kindObj, resource),
       DeploymentActionFactory.EditDeployment(kindObj, resource),
-      ...(resource.metadata.annotations?.['openshift.io/generated-by'] === 'OpenShiftWebConsole'
-        ? [DeleteResourceAction(kindObj, resource)]
-        : [CommonActionFactory.Delete(kindObj, resource)]),
+      CommonActionFactory.Delete(kindObj, resource),
     ],
     [hpaActions, pdbActions, kindObj, relatedHPAs, resource],
   );

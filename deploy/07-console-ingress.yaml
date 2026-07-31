@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8pler-console
+  namespace: k8pler-console
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: ["console.k8pler.example.com"]
+      secretName: k8pler-console-tls
+  rules:
+    - host: console.k8pler.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: k8pler-console
+                port:
+                  name: http

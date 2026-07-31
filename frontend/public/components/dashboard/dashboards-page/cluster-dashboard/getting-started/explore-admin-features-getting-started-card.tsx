@@ -9,33 +9,12 @@ import {
   GettingStartedLink,
 } from '@console/shared/src/components/getting-started';
 import { DOC_URL_OPENSHIFT_WHATS_NEW } from '../../../../utils';
-import { k8sGetResource } from '@console/dynamic-plugin-sdk/src/utils/k8s';
-import { PackageManifestModel } from '@console/operator-lifecycle-manager/src';
 
 export const ExploreAdminFeaturesGettingStartedCard: React.FC = () => {
   const { t } = useTranslation();
-  const [lightspeedIsAvailable, setLightspeedIsAvailable] = React.useState(false);
-
-  React.useEffect(() => {
-    const isLightspeedAvailable = async () => {
-      try {
-        await k8sGetResource({
-          model: PackageManifestModel,
-          name: 'lightspeed-operator',
-          ns: 'openshift-marketplace',
-        });
-        setLightspeedIsAvailable(true);
-      } catch (err) {
-        if (err.response.status !== 404) {
-          // eslint-disable-next-line no-console
-          console.log(err.message);
-        }
-        setLightspeedIsAvailable(false);
-      }
-    };
-
-    isLightspeedAvailable();
-  }, [t]);
+  // This card only renders behind FLAGS.OPENSHIFT (see getting-started-section.tsx),
+  // so the OperatorHub-backed Lightspeed probe this used to do is not applicable here.
+  const lightspeedIsAvailable = false;
 
   const links: GettingStartedLink[] = React.useMemo(
     () => [

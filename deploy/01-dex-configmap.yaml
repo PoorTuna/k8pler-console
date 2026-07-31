@@ -1,0 +1,35 @@
+# Dex is the OIDC provider used for console login. Replace the placeholder
+# hostnames/secrets below before applying. See deploy/README.md.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dex-config
+  namespace: k8pler-console
+data:
+  config.yaml: |
+    issuer: https://dex.k8pler.example.com
+
+    storage:
+      type: kubernetes
+      config:
+        inCluster: true
+
+    web:
+      http: 0.0.0.0:5556
+
+    staticClients:
+      - id: console
+        name: k8pler-console
+        secret: REPLACE_WITH_A_GENERATED_SECRET
+        redirectURIs:
+          - https://console.k8pler.example.com/auth/callback
+
+    # Dev-only fallback identity source. Replace with a real connector
+    # (LDAP, GitHub, OIDC upstream, SAML, ...) for anything beyond a demo.
+    # https://dexidp.io/docs/connectors/
+    staticPasswords:
+      - email: admin@k8pler.example.com
+        # bcrypt hash of the password, e.g.: htpasswd -bnBC 10 "" 'yourpassword' | tr -d ':\n'
+        hash: REPLACE_WITH_BCRYPT_HASH
+        username: admin
+        userID: 08a8684b-db88-4b73-90a9-3cd1661f5466

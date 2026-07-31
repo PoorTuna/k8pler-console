@@ -29,10 +29,6 @@ import { SyncAltIcon } from '@patternfly/react-icons/dist/esm/icons/sync-alt-ico
 
 import { removeQueryArgument } from '@console/internal/components/utils/router';
 import { SyncMarkdownView } from '@console/internal/components/markdown-view';
-import {
-  ClusterServiceVersionKind,
-  ClusterServiceVersionModel,
-} from '@console/operator-lifecycle-manager';
 import { WatchK8sResource } from '@console/dynamic-plugin-sdk';
 
 import { ClusterOperatorPage } from './cluster-operator';
@@ -928,24 +924,14 @@ export const UpdateInProgress: React.FC<UpdateInProgressProps> = ({
   );
 };
 
-const ClusterServiceVersionResource: WatchK8sResource = {
-  isList: true,
-  kind: referenceForModel(ClusterServiceVersionModel),
-};
-
 export const ClusterNotUpgradeableAlert: React.FC<ClusterNotUpgradeableAlertProps> = ({
   cv,
   onCancel,
 }) => {
   const [clusterOperators] = useK8sWatchResource<ClusterOperator[]>(ClusterOperatorsResource);
-  const [clusterServiceVersions] = useK8sWatchResource<ClusterServiceVersionKind[]>(
-    ClusterServiceVersionResource,
-  );
   const { t } = useTranslation();
   const notUpgradeableClusterOperators = getNotUpgradeableResources(clusterOperators);
   const notUpgradeableClusterOperatorsPresent = notUpgradeableClusterOperators.length > 0;
-  const notUpgradeableClusterServiceVersions = getNotUpgradeableResources(clusterServiceVersions);
-  const notUpgradeableCSVsPresent = notUpgradeableClusterServiceVersions.length > 0;
   const clusterUpgradeableFalseCondition = getConditionUpgradeableFalse(cv);
   const currentVersion = getLastCompletedUpdate(cv);
   const currentVersionParsed = semver.parse(currentVersion);
@@ -969,7 +955,7 @@ export const ClusterNotUpgradeableAlert: React.FC<ClusterNotUpgradeableAlertProp
       }
       className="co-alert"
       actionLinks={
-        (notUpgradeableClusterOperatorsPresent || notUpgradeableCSVsPresent) && (
+        notUpgradeableClusterOperatorsPresent && (
           <Flex>
             {notUpgradeableClusterOperatorsPresent && (
               <FlexItem>
@@ -979,17 +965,6 @@ export const ClusterNotUpgradeableAlert: React.FC<ClusterNotUpgradeableAlertProp
                 >
                   {t('public~View ClusterOperators')}
                 </ClusterOperatorsLink>
-              </FlexItem>
-            )}
-            {notUpgradeableCSVsPresent && (
-              // TODO:  update link to include filter once installed Operators filters are updated
-              <FlexItem>
-                <Link
-                  onClick={onCancel}
-                  to={`/k8s/ns/all-namespaces/${ClusterServiceVersionModel.plural}`}
-                >
-                  {t('public~View installed Operators')}
-                </Link>
               </FlexItem>
             )}
           </Flex>

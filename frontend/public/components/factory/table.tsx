@@ -29,8 +29,6 @@ import {
   getName,
   useDeepCompareMemoize,
 } from '@console/shared';
-import { PackageManifestKind } from '@console/operator-lifecycle-manager/src/types';
-import { defaultChannelFor } from '@console/operator-lifecycle-manager/src/components';
 import { RowFilter as RowFilterExt } from '@console/dynamic-plugin-sdk';
 import { RowFilter } from '../filter-toolbar';
 import * as UIActions from '../../actions/ui';
@@ -88,10 +86,6 @@ const sorts = {
   volumeSnapshotSource: (snapshot: VolumeSnapshotKind): string => snapshotSource(snapshot),
   snapshotLastRestore: (snapshot: K8sResourceKind, { restores }) =>
     restores[getName(snapshot)]?.status?.restoreTime,
-  sortPackageManifestByDefaultChannelName: (packageManifest: PackageManifestKind): string => {
-    const channel = defaultChannelFor(packageManifest);
-    return channel?.currentCSVDesc?.displayName;
-  },
 };
 
 // Common table row/columns helper SFCs for implementing accessible data grid

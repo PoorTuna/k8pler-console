@@ -18,7 +18,6 @@ export { default as ItemSelectorField } from './item-selector-field/ItemSelector
 export { default as InputGroupField } from './InputGroupField';
 export * from './text-column-field/text-column-types';
 export { default as TextColumnField } from './text-column-field/TextColumnField';
-export { default as DynamicFormField } from './DynamicFormField';
 export { default as SyncedEditorField } from './SyncedEditorField';
 export { default as SelectInputField } from './SelectInputField';
 export { default as SelectorInputField } from './SelectorInputField';

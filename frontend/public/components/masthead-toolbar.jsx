@@ -33,8 +33,6 @@ import {
   YellowExclamationTriangleIcon,
 } from '@console/shared';
 import { formatNamespacedRouteForResource } from '@console/shared/src/utils';
-import CloudShellMastheadButton from '@console/webterminal-plugin/src/components/cloud-shell/CloudShellMastheadButton';
-import CloudShellMastheadAction from '@console/webterminal-plugin/src/components/cloud-shell/CloudShellMastheadAction';
 import { getUser } from '@console/dynamic-plugin-sdk';
 import * as UIActions from '../actions/ui';
 import { flagPending, featureReducerName } from '../reducers/features';
@@ -485,9 +483,6 @@ const MastheadToolbarContents = ({ consoleLinks, cv, isMastheadStacked }) => {
           {
             component: <Link to={getImportYAMLPath()}>{t('public~Import YAML')}</Link>,
           },
-          {
-            component: <CloudShellMastheadAction />,
-          },
         ],
       });
 
@@ -631,7 +626,6 @@ const MastheadToolbarContents = ({ consoleLinks, cv, isMastheadStacked }) => {
               >
                 <PlusCircleIcon className="co-masthead-icon" alt="" />
               </Link>
-              <CloudShellMastheadButton />
               <ApplicationLauncher
                 aria-label={t('public~Help menu')}
                 className="co-app-launcher"
