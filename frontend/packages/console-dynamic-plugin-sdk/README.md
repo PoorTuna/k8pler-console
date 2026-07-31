@@ -310,13 +310,12 @@ for all assets served by your plugin web server.
 
 Clone Console repo and build the Bridge server by running `build-backend.sh` script.
 
-Run the following commands to log in as `kubeadmin` user and start a local Bridge server instance.
+Run the following commands to start a local Bridge server instance against your Kubernetes cluster.
 The `-plugins` argument tells Bridge to force load your plugin upon Console application startup.
 The `-i18n-namespaces` argument registers the corresponding i18n namespace for your plugin in Console.
 
 ```sh
-oc login https://example.openshift.com:6443 -u kubeadmin -p example-password
-source ./contrib/oc-environment.sh
+source ./contrib/environment.sh
 # Note: the plugin web server URL should include a trailing slash
 ./bin/bridge -plugins foo-plugin=http://localhost:9001/ -i18n-namespaces=plugin__foo-plugin
 ```

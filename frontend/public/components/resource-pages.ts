@@ -7,24 +7,16 @@ import {
 import { referenceForModel, GroupVersionKind, referenceForExtensionModel } from '../module/k8s';
 import {
   AlertmanagerModel,
-  AppliedClusterResourceQuotaModel,
-  BuildConfigModel,
-  BuildModel,
   ClusterOperatorModel,
   ClusterRoleModel,
   ClusterVersionModel,
   ConfigMapModel,
   ContainerModel,
   CronJobModel,
-  ClusterResourceQuotaModel,
   CustomResourceDefinitionModel,
   DaemonSetModel,
-  DeploymentConfigModel,
   DeploymentModel,
-  GroupModel,
   HorizontalPodAutoscalerModel,
-  ImageStreamModel,
-  ImageStreamTagModel,
   IngressModel,
   JobModel,
   LimitRangeModel,
@@ -40,22 +32,18 @@ import {
   PersistentVolumeClaimModel,
   PersistentVolumeModel,
   PodModel,
-  ProjectModel,
   PrometheusModel,
   ReplicaSetModel,
   ReplicationControllerModel,
   ResourceQuotaModel,
   RoleBindingModel,
   RoleModel,
-  RouteModel,
   SecretModel,
   ServiceAccountModel,
   ServiceModel,
   ServiceMonitorModel,
   StatefulSetModel,
   StorageClassModel,
-  TemplateInstanceModel,
-  UserModel,
   VolumeSnapshotModel,
   VolumeSnapshotClassModel,
   ClusterRoleBindingModel,
@@ -101,32 +89,9 @@ export const baseDetailsPages = ImmutableMap<ResourceMapKey, ResourceMapValue>()
       (m) => m.DaemonSetsDetailsPage,
     ),
   )
-  .set(referenceForModel(DeploymentConfigModel), () =>
-    import('./deployment-config' /* webpackChunkName: "deployment-config" */).then(
-      (m) => m.DeploymentConfigsDetailsPage,
-    ),
-  )
   .set(referenceForModel(DeploymentModel), () =>
     import('./deployment' /* webpackChunkName: "deployment" */).then(
       (m) => m.DeploymentsDetailsPage,
-    ),
-  )
-  .set(referenceForModel(BuildConfigModel), () =>
-    import('./build-config' /* webpackChunkName: "build-config" */).then(
-      (m) => m.BuildConfigsDetailsPage,
-    ),
-  )
-  .set(referenceForModel(BuildModel), () =>
-    import('./build' /* webpackChunkName: "build" */).then((m) => m.BuildsDetailsPage),
-  )
-  .set(referenceForModel(ImageStreamModel), () =>
-    import('./image-stream' /* webpackChunkName: "image-stream" */).then(
-      (m) => m.ImageStreamsDetailsPage,
-    ),
-  )
-  .set(referenceForModel(ImageStreamTagModel), () =>
-    import('./image-stream-tag' /* webpackChunkName: "image-stream-tag" */).then(
-      (m) => m.ImageStreamTagsDetailsPage,
     ),
   )
   .set(referenceForModel(JobModel), () =>
@@ -134,9 +99,6 @@ export const baseDetailsPages = ImmutableMap<ResourceMapKey, ResourceMapValue>()
   )
   .set(referenceForModel(CronJobModel), () =>
     import('./cron-job' /* webpackChunkName: "cron-job" */).then((m) => m.CronJobsDetailsPage),
-  )
-  .set(referenceForModel(ProjectModel), () =>
-    import('./namespace' /* webpackChunkName: "namespace" */).then((m) => m.ProjectsDetailsPage),
   )
   .set(referenceForModel(NamespaceModel), () =>
     import('./namespace' /* webpackChunkName: "namespace" */).then((m) => m.NamespacesDetailsPage),
@@ -211,9 +173,6 @@ export const baseDetailsPages = ImmutableMap<ResourceMapKey, ResourceMapValue>()
   .set(referenceForModel(IngressModel), () =>
     import('./ingress' /* webpackChunkName: "ingress" */).then((m) => m.IngressesDetailsPage),
   )
-  .set(referenceForModel(RouteModel), () =>
-    import('./routes' /* webpackChunkName: "routes" */).then((m) => m.RoutesDetailsPage),
-  )
   .set(referenceForModel(ClusterRoleModel), () =>
     import('./RBAC/role' /* webpackChunkName: "role" */).then((m) => m.ClusterRolesDetailsPage),
   )
@@ -224,12 +183,6 @@ export const baseDetailsPages = ImmutableMap<ResourceMapKey, ResourceMapValue>()
     import('./RBAC/role' /* webpackChunkName: "role" */).then(
       (m) => m.ClusterRoleBindingsDetailsPage,
     ),
-  )
-  .set(referenceForModel(UserModel), () =>
-    import('./user' /* webpackChunkName: "user" */).then((m) => m.UserDetailsPage),
-  )
-  .set(referenceForModel(GroupModel), () =>
-    import('./group' /* webpackChunkName: "group" */).then((m) => m.GroupDetailsPage),
   )
   .set(referenceForModel(AlertmanagerModel), () =>
     import('./alert-manager' /* webpackChunkName: "alert-manager" */).then(
@@ -244,16 +197,6 @@ export const baseDetailsPages = ImmutableMap<ResourceMapKey, ResourceMapValue>()
   .set(referenceForModel(ResourceQuotaModel), () =>
     import('./resource-quota' /* webpackChunkName: "resource-quota" */).then(
       (m) => m.ResourceQuotasDetailsPage,
-    ),
-  )
-  .set(referenceForModel(ClusterResourceQuotaModel), () =>
-    import('./resource-quota' /* webpackChunkName: "resource-quota" */).then(
-      (m) => m.ResourceQuotasDetailsPage,
-    ),
-  )
-  .set(referenceForModel(AppliedClusterResourceQuotaModel), () =>
-    import('./resource-quota' /* webpackChunkName: "resource-quota" */).then(
-      (m) => m.AppliedClusterResourceQuotasDetailsPage,
     ),
   )
   .set(referenceForModel(LimitRangeModel), () =>
@@ -279,11 +222,6 @@ export const baseDetailsPages = ImmutableMap<ResourceMapKey, ResourceMapValue>()
   .set(referenceForModel(StorageClassModel), () =>
     import('./storage-class' /* webpackChunkName: "storage-class" */).then(
       (m) => m.StorageClassDetailsPage,
-    ),
-  )
-  .set(referenceForModel(TemplateInstanceModel), () =>
-    import('./template-instance' /* webpackChunkName: "template-instance" */).then(
-      (m) => m.TemplateInstanceDetailsPage,
     ),
   )
   .set(referenceForModel(CustomResourceDefinitionModel), () =>
@@ -339,31 +277,14 @@ export const baseListPages = ImmutableMap<ResourceMapKey, ResourceMapValue>()
   .set(referenceForModel(DaemonSetModel), () =>
     import('./daemon-set' /* webpackChunkName: "daemon-set" */).then((m) => m.DaemonSetsPage),
   )
-  .set(referenceForModel(DeploymentConfigModel), () =>
-    import('./deployment-config' /* webpackChunkName: "deployment-config" */).then(
-      (m) => m.DeploymentConfigsPage,
-    ),
-  )
   .set(referenceForModel(DeploymentModel), () =>
     import('./deployment' /* webpackChunkName: "deployment" */).then((m) => m.DeploymentsPage),
-  )
-  .set(referenceForModel(BuildConfigModel), () =>
-    import('./build-config' /* webpackChunkName: "build-config" */).then((m) => m.BuildConfigsPage),
-  )
-  .set(referenceForModel(BuildModel), () =>
-    import('./build' /* webpackChunkName: "build" */).then((m) => m.BuildsPage),
-  )
-  .set(referenceForModel(ImageStreamModel), () =>
-    import('./image-stream' /* webpackChunkName: "image-stream" */).then((m) => m.ImageStreamsPage),
   )
   .set(referenceForModel(JobModel), () =>
     import('./job' /* webpackChunkName: "job" */).then((m) => m.JobsPage),
   )
   .set(referenceForModel(CronJobModel), () =>
     import('./cron-job' /* webpackChunkName: "cron-job" */).then((m) => m.CronJobsPage),
-  )
-  .set(referenceForModel(ProjectModel), () =>
-    import('./namespace' /* webpackChunkName: "namespace" */).then((m) => m.ProjectsPage),
   )
   .set(referenceForModel(NamespaceModel), () =>
     import('./namespace' /* webpackChunkName: "namespace" */).then((m) => m.NamespacesPage),
@@ -434,20 +355,11 @@ export const baseListPages = ImmutableMap<ResourceMapKey, ResourceMapValue>()
   .set(referenceForModel(IngressModel), () =>
     import('./ingress' /* webpackChunkName: "ingress" */).then((m) => m.IngressesPage),
   )
-  .set(referenceForModel(RouteModel), () =>
-    import('./routes' /* webpackChunkName: "routes" */).then((m) => m.RoutesPage),
-  )
   .set(referenceForModel(RoleModel), () =>
     import('./RBAC/role' /* webpackChunkName: "role" */).then((m) => m.RolesPage),
   )
   .set(referenceForModel(RoleBindingModel), () =>
     import('./RBAC/bindings' /* webpackChunkName: "bindings" */).then((m) => m.RoleBindingsPage),
-  )
-  .set(referenceForModel(UserModel), () =>
-    import('./user' /* webpackChunkName: "user" */).then((m) => m.UserPage),
-  )
-  .set(referenceForModel(GroupModel), () =>
-    import('./group' /* webpackChunkName: "group" */).then((m) => m.GroupPage),
   )
   .set(referenceForModel(PrometheusModel), () =>
     import('./prometheus' /* webpackChunkName: "prometheus" */).then(
@@ -472,11 +384,6 @@ export const baseListPages = ImmutableMap<ResourceMapKey, ResourceMapValue>()
       (m) => m.ResourceQuotasPage,
     ),
   )
-  .set(referenceForModel(AppliedClusterResourceQuotaModel), () =>
-    import('./resource-quota' /* webpackChunkName: "resource-quota" */).then(
-      (m) => m.AppliedClusterResourceQuotasPage,
-    ),
-  )
   .set(referenceForModel(LimitRangeModel), () =>
     import('./limit-range' /* webpackChunkName: "limit-range" */).then((m) => m.LimitRangeListPage),
   )
@@ -496,11 +403,6 @@ export const baseListPages = ImmutableMap<ResourceMapKey, ResourceMapValue>()
   .set(referenceForModel(StorageClassModel), () =>
     import('./storage-class' /* webpackChunkName: "storage-class" */).then(
       (m) => m.StorageClassPage,
-    ),
-  )
-  .set(referenceForModel(TemplateInstanceModel), () =>
-    import('./template-instance' /* webpackChunkName: "template-instance" */).then(
-      (m) => m.TemplateInstancePage,
     ),
   )
   .set(referenceForModel(CustomResourceDefinitionModel), () =>

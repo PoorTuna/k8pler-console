@@ -1,8 +1,5 @@
 # shellcheck shell=bash
 #
-# NOTE: This script is for native Kubernetes. If connecting to an OpenShift
-# cluster instead, use contrib/oc-environment.sh.
-#
 # This file is an example of how you might set up your environment to run the
 # OpenShift console during development when connecting to a native Kubernetes
 # cluster. To use it for running bridge, do
@@ -32,8 +29,7 @@ export BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT
 BRIDGE_K8S_MODE_OFF_CLUSTER_SKIP_VERIFY_TLS=true
 export BRIDGE_K8S_MODE_OFF_CLUSTER_SKIP_VERIFY_TLS
 
-secretname=$(kubectl get serviceaccount default --namespace=kube-system -o jsonpath='{.secrets[0].name}')
-BRIDGE_K8S_AUTH_BEARER_TOKEN=$(kubectl get secret "$secretname" --namespace=kube-system -o template --template='{{.data.token}}' | base64 --decode)
+BRIDGE_K8S_AUTH_BEARER_TOKEN=$(kubectl create token default --namespace=kube-system)
 export BRIDGE_K8S_AUTH_BEARER_TOKEN
 
 echo "Using $BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT"

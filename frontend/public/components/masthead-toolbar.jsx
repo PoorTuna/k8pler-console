@@ -37,36 +37,16 @@ import { getUser } from '@console/dynamic-plugin-sdk';
 import * as UIActions from '../actions/ui';
 import { flagPending, featureReducerName } from '../reducers/features';
 import { authSvc } from '../module/auth';
-import { getOCMLink, referenceForModel } from '../module/k8s';
+import { referenceForModel } from '../module/k8s';
 import { Firehose } from './utils';
 import { openshiftHelpBase } from './utils/documentation';
 import { AboutModal } from './about-modal';
-import { clusterVersionReference, getReportBugLink } from '../module/k8s/cluster-settings';
-import * as redhatLogoImg from '../imgs/logos/redhat.svg';
 import { GuidedTourMastheadTrigger } from '@console/app/src/components/tour';
 import { ConsoleLinkModel } from '../models';
 import ClusterMenu from '@console/app/src/components/nav/ClusterMenu';
 import { ACM_PERSPECTIVE_ID } from '@console/app/src/consts';
-import { FeedbackModal } from '@patternfly/react-user-feedback';
-import { useFeedbackLocal } from './feedback-local';
-import feedbackImage from '@patternfly/react-user-feedback/dist/esm/images/rh_feedback.svg';
 
 const LAST_CONSOLE_ACTIVITY_TIMESTAMP_LOCAL_STORAGE_KEY = 'last-console-activity-timestamp';
-
-const defaultHelpLinks = [
-  {
-    // t('public~Learning Portal')
-    label: 'Learning Portal',
-    externalLink: true,
-    href: 'https://learn.openshift.com/?ref=webconsole',
-  },
-  {
-    // t('public~OpenShift Blog')
-    label: 'OpenShift Blog',
-    externalLink: true,
-    href: 'https://blog.openshift.com',
-  },
-];
 
 const MultiClusterToolbarGroup = () => {
   const acmPerspectiveExtension = usePerspectiveExtension(ACM_PERSPECTIVE_ID);
@@ -76,21 +56,6 @@ const MultiClusterToolbarGroup = () => {
         <ClusterMenu />
       </ToolbarGroup>
     )
-  );
-};
-
-const FeedbackModalLocalized = ({ isOpen, onClose, reportBugLink }) => {
-  const feedbackLocales = useFeedbackLocal(reportBugLink);
-  return (
-    <FeedbackModal
-      onShareFeedback="https://console.redhat.com/self-managed-feedback-form?source=openshift"
-      onOpenSupportCase={reportBugLink.href}
-      feedbackLocale={feedbackLocales}
-      onJoinMailingList="https://console.redhat.com/self-managed-research-form?source=openshift"
-      feedbackImg={feedbackImage}
-      isOpen={isOpen}
-      onClose={onClose}
-    />
   );
 };
 
@@ -110,7 +75,7 @@ const SystemStatusButton = ({ statuspageData }) => {
 };
 
 // TODO migrate to TS, break this down into smaller components and hooks
-const MastheadToolbarContents = ({ consoleLinks, cv, isMastheadStacked }) => {
+const MastheadToolbarContents = ({ consoleLinks, isMastheadStacked }) => {
   const { t } = useTranslation();
   const fireTelemetryEvent = useTelemetry();
   const authEnabledFlag = useFlag(FLAGS.AUTH_ENABLED);
@@ -124,8 +89,7 @@ const MastheadToolbarContents = ({ consoleLinks, cv, isMastheadStacked }) => {
     t('public~Login with this command'),
     externalLoginCommand,
   );
-  const { clusterID, user, alertCount, canAccessNS } = useSelector((state) => ({
-    clusterID: state.UI.get('clusterID'),
+  const { user, alertCount, canAccessNS } = useSelector((state) => ({
     user: getUser(state),
     alertCount: state.observe.getIn(['alertCount']),
     canAccessNS: !!state[featureReducerName].get(FLAGS.CAN_GET_NS),
@@ -136,8 +100,6 @@ const MastheadToolbarContents = ({ consoleLinks, cv, isMastheadStacked }) => {
   const [isHelpDropdownOpen, setIsHelpDropdownOpen] = React.useState(false);
   const [statusPageData, setStatusPageData] = React.useState(null);
   const [showAboutModal, setshowAboutModal] = React.useState(false);
-  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = React.useState(false);
-  const reportBugLink = cv?.data ? getReportBugLink(cv.data, t) : null;
   const userInactivityTimeout = React.useRef(null);
   const username = user?.username ?? '';
   const isKubeAdmin = username === 'kube:admin';
@@ -156,7 +118,6 @@ const MastheadToolbarContents = ({ consoleLinks, cv, isMastheadStacked }) => {
   const onAppLauncherDropdownSelect = () => setIsAppLauncherDropdownOpen((a) => !a);
   const onHelpDropdownToggle = (e, isOpen) => setIsHelpDropdownOpen(isOpen);
   const onHelpDropdownSelect = () => setIsHelpDropdownOpen((h) => !h);
-  const onFeedbackModal = () => setIsFeedbackModalOpen(true);
   const onAboutModal = (e) => {
     e.preventDefault();
     setshowAboutModal(true);
@@ -199,42 +160,6 @@ const MastheadToolbarContents = ({ consoleLinks, cv, isMastheadStacked }) => {
     const launcherItems = getAdditionalLinks(consoleLinks?.data, 'ApplicationMenu');
 
     const sections = [];
-    if (
-      clusterID &&
-      window.SERVER_FLAGS.branding !== 'okd' &&
-      window.SERVER_FLAGS.branding !== 'azure'
-    ) {
-      sections.push({
-        name: t('public~Red Hat Applications'),
-        isSection: true,
-        actions: [
-          {
-            label: t('public~OpenShift Cluster Manager'),
-            externalLink: true,
-            href: getOCMLink(clusterID),
-            image: <img src={redhatLogoImg} alt="" />,
-            callback: () => {
-              fireTelemetryEvent('Launcher Menu Accessed', {
-                id: 'OpenShift Cluster Manager',
-                name: 'OpenShift Cluster Manager',
-              });
-            },
-          },
-          {
-            label: t('public~Red Hat Hybrid Cloud Console'),
-            externalLink: true,
-            href: 'https://console.redhat.com',
-            image: <img src={redhatLogoImg} alt="" />,
-            callback: () => {
-              fireTelemetryEvent('Launcher Menu Accessed', {
-                id: 'Red Hat Hybrid Cloud Console',
-                name: 'Red Hat Hybrid Cloud Console',
-              });
-            },
-          },
-        ],
-      });
-    }
 
     _.each(launcherItems, (item) => {
       const sectionName = _.get(item, 'spec.applicationMenu.section', '');
@@ -308,18 +233,6 @@ const MastheadToolbarContents = ({ consoleLinks, cv, isMastheadStacked }) => {
         {
           component: <GuidedTourMastheadTrigger ref={tourRef} />,
         },
-        ...(reportBugLink
-          ? [
-              {
-                label: t('public~Share Feedback'),
-                component: 'button',
-                callback: (e) => {
-                  e.preventDefault();
-                  onFeedbackModal(reportBugLink);
-                },
-              },
-            ]
-          : []),
         {
           label: t('public~About'),
           callback: onAboutModal,
@@ -327,14 +240,6 @@ const MastheadToolbarContents = ({ consoleLinks, cv, isMastheadStacked }) => {
         },
       ],
     });
-
-    // Add default help links to start of additional links from operator
-    additionalHelpActions.actions = defaultHelpLinks
-      .map((helpLink) => ({
-        ...helpLink,
-        label: t(`public~${helpLink.label}`),
-      }))
-      .concat(additionalHelpActions.actions);
 
     if (!_.isEmpty(additionalHelpActions.actions)) {
       helpActions.push(additionalHelpActions);
@@ -669,29 +574,13 @@ const MastheadToolbarContents = ({ consoleLinks, cv, isMastheadStacked }) => {
         </ToolbarContent>
       </Toolbar>
       <AboutModal isOpen={showAboutModal} closeAboutModal={closeAboutModal} />
-      {reportBugLink ? (
-        <FeedbackModalLocalized
-          reportBugLink={reportBugLink}
-          isOpen={isFeedbackModalOpen}
-          onClose={() => setIsFeedbackModalOpen(false)}
-        />
-      ) : null}
     </>
   );
 };
 
 export const MastheadToolbar = ({ isMastheadStacked }) => {
-  const clusterVersionFlag = useFlag(FLAGS.CLUSTER_VERSION);
   const consoleLinkFlag = useFlag(FLAGS.CONSOLE_LINK);
   const resources = [];
-  if (clusterVersionFlag) {
-    resources.push({
-      kind: clusterVersionReference,
-      name: 'version',
-      isList: false,
-      prop: 'cv',
-    });
-  }
   if (consoleLinkFlag) {
     resources.push({
       kind: referenceForModel(ConsoleLinkModel),

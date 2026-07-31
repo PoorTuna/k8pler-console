@@ -3,7 +3,6 @@ import * as fuzzy from 'fuzzysearch';
 import { nodeStatus, volumeSnapshotStatus } from '@console/app/src/status';
 import { getNodeRoles, getLabelsAsString } from '@console/shared';
 import { Alert, AnyRowFilter, FilterValue, Rule } from '@console/dynamic-plugin-sdk';
-import { routeStatus } from '../routes';
 import { secretTypeFilterReducer } from '../secret';
 import { roleType } from '../RBAC';
 import {
@@ -147,15 +146,6 @@ export const tableFilters = (isExactSearch: boolean): FilterMap => {
 
       const strategy = buildConfig.spec.strategy.type;
       return strategies.selected.includes(strategy) || !_.includes(strategies.all, strategy);
-    },
-
-    'route-status': (statuses, route) => {
-      if (!statuses || !statuses.selected || !statuses.selected.length) {
-        return true;
-      }
-
-      const status = routeStatus(route);
-      return statuses.selected.includes(status) || !_.includes(statuses.all, status);
     },
 
     'secret-type': (types, secret) => {

@@ -29,7 +29,6 @@ export * from './alerts';
 export * from './async';
 export * from './download-button';
 export * from './entitlements';
-export * from './build-strategy';
 export * from './copy-to-clipboard';
 export * from './build-hooks';
 export * from './webhooks';

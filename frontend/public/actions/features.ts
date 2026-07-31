@@ -16,7 +16,7 @@ import {
 import { setUser } from '@console/dynamic-plugin-sdk/src/app/core/actions/core';
 import { resolveExtension } from '@console/dynamic-plugin-sdk/src/coderefs/coderef-resolver';
 import store from '../redux';
-import { GroupModel, UserModel, VolumeSnapshotContentModel } from '../models';
+import { VolumeSnapshotContentModel } from '../models';
 import { ClusterVersionKind } from '../module/k8s/types';
 import { receivedResources } from '@console/dynamic-plugin-sdk/src/app/k8s/actions/k8s';
 import { setClusterID, setCreateProjectMessage } from './common';
@@ -109,44 +109,10 @@ const ssarChecks = [
     resourceAttributes: { resource: 'persistentvolumes', verb: 'list' },
   },
   {
-    flag: FLAGS.CAN_LIST_USERS,
-    resourceAttributes: {
-      group: UserModel.apiGroup,
-      resource: UserModel.plural,
-      verb: 'list',
-    },
-  },
-  {
-    flag: FLAGS.CAN_LIST_GROUPS,
-    resourceAttributes: {
-      group: GroupModel.apiGroup,
-      resource: GroupModel.plural,
-      verb: 'list',
-    },
-  },
-  {
     flag: FLAGS.CAN_LIST_CRD,
     resourceAttributes: {
       group: 'apiextensions.k8s.io',
       resource: 'customresourcedefinitions',
-      verb: 'list',
-    },
-  },
-  {
-    // TODO: Move into OLM plugin
-    flag: FLAGS.CAN_LIST_OPERATOR_GROUP,
-    resourceAttributes: {
-      group: 'operators.coreos.com',
-      resource: 'operatorgroups',
-      verb: 'list',
-    },
-  },
-  {
-    // TODO: Move into OLM plugin
-    flag: FLAGS.CAN_LIST_PACKAGE_MANIFEST,
-    resourceAttributes: {
-      group: 'packages.operators.coreos.com',
-      resource: 'packagemanifests',
       verb: 'list',
     },
   },

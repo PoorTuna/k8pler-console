@@ -1,6 +1,5 @@
 import * as _ from 'lodash-es';
 import * as semver from 'semver';
-import i18next from 'i18next';
 
 import { ClusterVersionModel, MachineConfigPoolModel } from '../../models';
 import { referenceForModel } from './k8s-ref';
@@ -248,60 +247,6 @@ export const getOpenShiftVersion = (cv: ClusterVersionKind): string => {
 
 export const getCurrentVersion = (cv: ClusterVersionKind): string => {
   return _.get(cv, 'status.history[0].version') || _.get(cv, 'spec.desiredUpdate.version');
-};
-
-export const getReportBugLink = (
-  cv: ClusterVersionKind,
-): { label: string; description: string; href: string } => {
-  const version: string = getCurrentVersion(cv);
-  const parsed = semver.parse(version);
-  if (!parsed) {
-    return null;
-  }
-
-  const { major, minor, prerelease } = parsed;
-  let productName;
-  switch (window.SERVER_FLAGS.branding) {
-    case 'openshift':
-    case 'ocp':
-      productName = 'OpenShift Container Platform';
-      break;
-    case 'online':
-      productName = 'OpenShift Online';
-      break;
-    case 'dedicated':
-      productName = 'OpenShift Dedicated';
-      break;
-    case 'azure':
-      productName = 'Azure Red Hat OpenShift';
-      break;
-    case 'rosa':
-      productName = 'Red Hat OpenShift Service on AWS';
-      break;
-    default:
-      productName = 'OKD';
-  }
-
-  // Do not show a link for OKD until the new OKD Jira project is ready.
-  if (productName === 'OKD') {
-    return null;
-  }
-
-  // Show a support case link for supported versions and a Jira link for prerelease versions.
-  return _.isEmpty(prerelease)
-    ? {
-        label: i18next.t('public~Open a support case'),
-        description: i18next.t('public~Get help from Red Hat support.'),
-        href: `https://access.redhat.com/support/cases/#/case/new?product=${encodeURIComponent(
-          productName,
-        )}&version=${major}.${minor}&clusterId=${cv.spec.clusterID}`,
-      }
-    : {
-        label: i18next.t('public~Report a bug'),
-        description: i18next.t('public~Report a bug to Red Hat'),
-        // It is not currently possible to pre-populate `component`, etc. per https://jira.atlassian.com/browse/JRASERVER-23590
-        href: `https://issues.redhat.com/secure/CreateIssue.jspa?pid=12332330&issuetype=1`,
-      };
 };
 
 export const showReleaseNotes = (): boolean => {

@@ -4,7 +4,6 @@ import * as _ from 'lodash-es';
 
 // FIXME(alecmerdler): Do not `import store`
 import store from '../redux';
-import { OverviewItem } from '@console/shared';
 import {
   ALL_NAMESPACES_KEY,
   LAST_NAMESPACE_NAME_LOCAL_STORAGE_KEY,
@@ -12,7 +11,6 @@ import {
 import { K8sResourceKind, PodKind, NodeKind } from '../module/k8s';
 import { allModels } from '../module/k8s/k8s-models';
 import { detectFeatures, clearSSARFlags } from './features';
-import { OverviewSpecialGroup } from '../components/overview/constants';
 import { setClusterID, setCreateProjectMessage } from './common';
 import { subsClient } from '../graphql/client';
 import {
@@ -23,9 +21,6 @@ import {
 } from '@console/dynamic-plugin-sdk';
 
 export enum ActionType {
-  DismissOverviewDetails = 'dismissOverviewDetails',
-  SelectOverviewDetailsTab = 'selectOverviewDetailsTab',
-  SelectOverviewItem = 'selectOverviewItem',
   SetActiveApplication = 'setActiveApplication',
   SetActiveNamespace = 'setActiveNamespace',
   SetCreateProjectMessage = 'setCreateProjectMessage',
@@ -34,11 +29,6 @@ export enum ActionType {
   NotificationDrawerToggleExpanded = 'notificationDrawerExpanded',
   SetClusterID = 'setClusterID',
   SortList = 'sortList',
-  UpdateOverviewMetrics = 'updateOverviewMetrics',
-  UpdateOverviewResources = 'updateOverviewResources',
-  UpdateOverviewSelectedGroup = 'updateOverviewSelectedGroup',
-  UpdateOverviewLabels = 'updateOverviewLabels',
-  UpdateOverviewFilterValue = 'updateOverviewFilterValue',
   UpdateTimestamps = 'updateTimestamps',
   SetPodMetrics = 'setPodMetrics',
   SetNamespaceMetrics = 'setNamespaceMetrics',
@@ -268,22 +258,8 @@ export const sortList = (listId: string, field: string, func: string, orderBy: s
 
   return action(ActionType.SortList, { listId, field, func, orderBy });
 };
-export const selectOverviewItem = (uid: string) => action(ActionType.SelectOverviewItem, { uid });
-export const selectOverviewDetailsTab = (tab: string) =>
-  action(ActionType.SelectOverviewDetailsTab, { tab });
-export const updateOverviewMetrics = (metrics: any) =>
-  action(ActionType.UpdateOverviewMetrics, { metrics });
-export const updateOverviewResources = (resources: OverviewItem[]) =>
-  action(ActionType.UpdateOverviewResources, { resources });
 export const updateTimestamps = (lastTick: number) =>
   action(ActionType.UpdateTimestamps, { lastTick });
-export const dismissOverviewDetails = () => action(ActionType.DismissOverviewDetails);
-export const updateOverviewSelectedGroup = (group: OverviewSpecialGroup | string) =>
-  action(ActionType.UpdateOverviewSelectedGroup, { group });
-export const updateOverviewLabels = (labels: string[]) =>
-  action(ActionType.UpdateOverviewLabels, { labels });
-export const updateOverviewFilterValue = (value: string) =>
-  action(ActionType.UpdateOverviewFilterValue, { value });
 export const notificationDrawerToggleExpanded = () =>
   action(ActionType.NotificationDrawerToggleExpanded);
 export const setPodMetrics = (podMetrics: PodMetrics) =>
@@ -313,16 +289,8 @@ const uiActions = {
   sortList,
   setCreateProjectMessage,
   setClusterID,
-  selectOverviewItem,
-  selectOverviewDetailsTab,
   setServiceLevel,
-  updateOverviewMetrics,
-  updateOverviewResources,
   updateTimestamps,
-  dismissOverviewDetails,
-  updateOverviewSelectedGroup,
-  updateOverviewLabels,
-  updateOverviewFilterValue,
   setPodMetrics,
   setNamespaceMetrics,
   setNodeMetrics,

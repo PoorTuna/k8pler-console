@@ -105,8 +105,9 @@ hand-written Dex + console + RBAC set, `kubectl apply -f` directly.
 ./build.sh
 ```
 
-This runs `build-backend.sh` (outputs `bin/bridge`) and `build-frontend.sh`
-(outputs `frontend/public/dist`), or build the container image directly:
+This runs `build-backend.sh` (outputs `bin/bridge`), `build-frontend.sh`
+(outputs `frontend/public/dist`), and `build-demos.sh` (builds the
+`dynamic-demo-plugin` sample plugin), or build the container image directly:
 
 ```bash
 docker build -t k8pler-console:latest .

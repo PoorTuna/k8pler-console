@@ -24,4 +24,4 @@ This fork adapts the console to run against **plain upstream Kubernetes**:
   OLM/OperatorHub, ImageStreams, BuildConfigs/Builds, DeploymentConfigs,
   Templates, OAuth Users/Groups/Identities admin pages.
 
-See the plan/README for details as they land.
+See `README.md` for setup and deployment details.

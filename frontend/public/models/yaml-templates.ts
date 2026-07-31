@@ -169,33 +169,6 @@ spec:
 `,
   )
   .setIn(
-    [referenceForModel(k8sModels.BuildConfigModel), 'default'],
-    `
-apiVersion: build.openshift.io/v1
-kind: BuildConfig
-metadata:
-  name: example
-spec:
-  source:
-    git:
-      ref: master
-      uri: https://github.com/openshift/ruby-ex.git
-    type: Git
-  strategy:
-    type: Source
-    sourceStrategy:
-      from:
-        kind: ImageStreamTag
-        name: ruby:2.7
-        namespace: openshift
-      env: []
-  triggers:
-  - type: ImageChange
-    imageChange: {}
-  - type: ConfigChange
-`,
-  )
-  .setIn(
     [referenceForModel(k8sModels.DeploymentModel), 'default'],
     `
 apiVersion: apps/v1
@@ -305,29 +278,6 @@ spec:
 `,
   )
   .setIn(
-    [referenceForModel(k8sModels.DeploymentConfigModel), 'default'],
-    `
-apiVersion: apps.openshift.io/v1
-kind: DeploymentConfig
-metadata:
-  name: example
-spec:
-  selector:
-    app: httpd
-  replicas: 3
-  template:
-    metadata:
-      labels:
-        app: httpd
-    spec:
-      containers:
-      - name: httpd
-        image: image-registry.openshift-image-registry.svc:5000/openshift/httpd:latest
-        ports:
-        - containerPort: 8080
-`,
-  )
-  .setIn(
     [referenceForModel(k8sModels.PersistentVolumeModel), 'default'],
     `
 apiVersion: v1
@@ -434,15 +384,6 @@ spec:
         image: perl
         command: ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
       restartPolicy: Never
-`,
-  )
-  .setIn(
-    [referenceForModel(k8sModels.ImageStreamModel), 'default'],
-    `
-apiVersion: image.openshift.io/v1
-kind: ImageStream
-metadata:
-  name: example
 `,
   )
   .setIn(
@@ -745,22 +686,6 @@ spec:
 `,
   )
   .setIn(
-    [referenceForModel(k8sModels.RouteModel), 'default'],
-    `
-apiVersion: route.openshift.io/v1
-kind: Route
-metadata:
-  name: example
-spec:
-  path: /
-  to:
-    kind: Service
-    name: example
-  port:
-    targetPort: 80
-`,
-  )
-  .setIn(
     [referenceForModel(k8sModels.ReplicationControllerModel), 'default'],
     `
 apiVersion: v1
@@ -782,93 +707,6 @@ spec:
         image: image-registry.openshift-image-registry.svc:5000/openshift/httpd:latest
         ports:
         - containerPort: 8080
-`,
-  )
-  .setIn(
-    [referenceForModel(k8sModels.BuildConfigModel), 'docker-build'],
-    `
-apiVersion: build.openshift.io/v1
-kind: BuildConfig
-metadata:
-  name: docker-build
-  namespace: default
-  labels:
-    name: docker-build
-spec:
-  triggers:
-  - type: GitHub
-    github:
-      secret: secret101
-  - type: ImageChange
-    imageChange: {}
-  - type: ConfigChange
-  source:
-    type: Git
-    git:
-      uri: https://github.com/openshift/ruby-hello-world.git
-  strategy:
-    type: Docker
-    dockerStrategy:
-      from:
-        kind: ImageStreamTag
-        name: ruby:latest
-        namespace: openshift
-      env:
-      - name: EXAMPLE
-        value: sample-app
-  output:
-    to:
-      kind: ImageStreamTag
-      name: origin-ruby-sample:latest
-  postCommit:
-    args:
-    - bundle
-    - exec
-    - rake
-    - test
-`,
-  )
-  .setIn(
-    [referenceForModel(k8sModels.BuildConfigModel), 's2i-build'],
-    `apiVersion: build.openshift.io/v1
-kind: BuildConfig
-metadata:
-  name: s2i-build
-  namespace: default
-spec:
-  output:
-    to:
-      kind: ImageStreamTag
-      name: s2i-build:latest
-  source:
-    git:
-      ref: master
-      uri: https://github.com/openshift/ruby-ex.git
-    type: Git
-  strategy:
-    type: Source
-    sourceStrategy:
-      from:
-        kind: ImageStreamTag
-        name: ruby:2.4
-        namespace: openshift
-      env: []
-  triggers:
-  - type: ImageChange
-    imageChange: {}
-  - type: ConfigChange
-`,
-  )
-  .setIn(
-    [referenceForModel(k8sModels.GroupModel), 'default'],
-    `
-apiVersion: user.openshift.io/v1
-kind: Group
-metadata:
-  name: example
-users:
-- user1
-- user2
 `,
   )
   .setIn(

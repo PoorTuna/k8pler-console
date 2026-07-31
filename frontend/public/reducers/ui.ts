@@ -4,7 +4,6 @@ import { Map as ImmutableMap } from 'immutable';
 import { ActionType, UIAction } from '../actions/ui';
 import { ALL_APPLICATIONS_KEY, ALL_NAMESPACES_KEY } from '@console/shared/src/constants';
 import { getNamespace } from '../components/utils/link';
-import { OverviewSpecialGroup } from '../components/overview/constants';
 import { RootState } from '../redux';
 import { getUser } from '@console/dynamic-plugin-sdk';
 
@@ -26,15 +25,6 @@ export default (state: UIState, action: UIAction): UIState => {
         trialDateEnd: null,
         hasSecretAccess: false,
         clusterID: '',
-      }),
-      overview: ImmutableMap({
-        metrics: {},
-        resources: ImmutableMap({}),
-        selectedDetailsTab: 'Resources',
-        selectedUID: '',
-        selectedGroup: OverviewSpecialGroup.GROUP_BY_APPLICATION,
-        groupOptions: ImmutableMap(),
-        filterValue: '',
       }),
       user: {},
       utilizationDuration: ImmutableMap({
@@ -100,34 +90,6 @@ export default (state: UIState, action: UIAction): UIState => {
         !state.getIn(['notifications', 'isExpanded']),
       );
 
-    case ActionType.SelectOverviewItem:
-      return state.setIn(['overview', 'selectedUID'], action.payload.uid);
-
-    case ActionType.SelectOverviewDetailsTab:
-      return state.setIn(['overview', 'selectedDetailsTab'], action.payload.tab);
-
-    case ActionType.DismissOverviewDetails:
-      return state.mergeIn(['overview'], { selectedUID: '', selectedDetailsTab: '' });
-
-    case ActionType.UpdateOverviewMetrics:
-      return state.setIn(['overview', 'metrics'], action.payload.metrics);
-
-    case ActionType.UpdateOverviewResources: {
-      const newResources = ImmutableMap(_.keyBy(action.payload.resources, 'obj.metadata.uid'));
-      return state.setIn(['overview', 'resources'], newResources);
-    }
-
-    case ActionType.UpdateOverviewSelectedGroup: {
-      return state.setIn(['overview', 'selectedGroup'], action.payload.group);
-    }
-
-    case ActionType.UpdateOverviewLabels: {
-      return state.setIn(['overview', 'labels'], action.payload.labels);
-    }
-
-    case ActionType.UpdateOverviewFilterValue: {
-      return state.setIn(['overview', 'filterValue'], action.payload.value);
-    }
     case ActionType.UpdateTimestamps:
       return state.set('lastTick', action.payload.lastTick);
 
