@@ -269,8 +269,13 @@ export const ConnectedTopologyView: React.FC<ComponentProps> = ({
           }
         });
         onFiltersChange(updateFilters);
-        setFiltersLoaded(true);
       });
+      // Must run even with zero Topology/DisplayFilters extensions (this fork
+      // ships none -- that extension type only ever came from the deleted
+      // operatorsTopologyPlugin) -- otherwise filteredModel below never gets
+      // set and the graph/list view stay empty forever regardless of model
+      // contents.
+      setFiltersLoaded(true);
     }
     // Only update on extension changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
