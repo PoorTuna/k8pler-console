@@ -199,6 +199,29 @@
   },
 
   {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
+      "path": "/helm-releases",
+      "component": { "$codeRef": "helm.NamespaceRedirectPage" }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
+      "path": ["/helm-releases/all-namespaces", "/helm-releases/ns/:ns"],
+      "component": { "$codeRef": "helm.HelmReleasesPage" }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "path": "/helm-releases/ns/:ns/:name",
+      "component": { "$codeRef": "helm.HelmReleaseDetailsPage" }
+    }
+  },
+  {
     "type": "console.flag/hookProvider",
     "properties": {
       "handler": { "$codeRef": "actions.useDeveloperPerspectiveStateProvider" }
@@ -523,6 +546,65 @@
     "type": "console.navigation/href",
     "properties": {
       "perspective": "admin",
+      "section": "observe",
+      "id": "alerts",
+      "name": "%console-app~Alerts%",
+      "href": "/monitoring/alerts"
+    },
+    "flags": { "required": ["MONITORING"] }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "perspective": "admin",
+      "section": "observe",
+      "id": "silences",
+      "insertAfter": "alerts",
+      "name": "%console-app~Silences%",
+      "href": "/monitoring/silences"
+    },
+    "flags": { "required": ["MONITORING"] }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "perspective": "admin",
+      "section": "observe",
+      "id": "alertrules",
+      "insertAfter": "silences",
+      "name": "%console-app~Alerting rules%",
+      "href": "/monitoring/alertrules"
+    },
+    "flags": { "required": ["MONITORING"] }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "perspective": "admin",
+      "section": "observe",
+      "id": "metrics",
+      "insertAfter": "alertrules",
+      "name": "%console-app~Metrics%",
+      "href": "/monitoring/query-browser"
+    },
+    "flags": { "required": ["MONITORING"] }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "perspective": "admin",
+      "section": "observe",
+      "id": "targets",
+      "insertAfter": "metrics",
+      "name": "%console-app~Targets%",
+      "href": "/monitoring/targets"
+    },
+    "flags": { "required": ["MONITORING"] }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "perspective": "admin",
       "section": "home",
       "id": "dashboards",
       "name": "%console-app~Overview%",
@@ -594,6 +676,33 @@
         "version": "v1",
         "kind": "Pod"
       }
+    }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "perspective": "admin",
+      "section": "workloads",
+      "id": "topology",
+      "insertAfter": "pods",
+      "name": "%console-app~Topology%",
+      "href": "/topology",
+      "namespaced": true,
+      "dataAttributes": {
+        "data-quickstart-id": "qs-nav-topology"
+      }
+    }
+  },
+  {
+    "type": "console.navigation/href",
+    "properties": {
+      "perspective": "admin",
+      "section": "workloads",
+      "id": "helmreleases",
+      "insertAfter": "topology",
+      "name": "%console-app~Helm releases%",
+      "href": "/helm-releases",
+      "namespaced": true
     }
   },
   {

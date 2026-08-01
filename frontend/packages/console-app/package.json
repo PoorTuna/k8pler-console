@@ -26,6 +26,7 @@
       "fileUploadContext": "src/components/file-upload/file-upload-context.ts",
       "actions": "src/actions",
       "clusterConfiguration": "src/components/cluster-configuration",
+      "helm": "src/components/helm",
       "userPreferences": "src/components/user-preferences",
       "perspective": "src/utils/perspective",
       "perspectiveConfiguration": "src/components/detect-perspective/PerspectiveConfiguration.tsx",

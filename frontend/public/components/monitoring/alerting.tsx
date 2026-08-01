@@ -119,6 +119,7 @@ import { useBoolean } from './hooks/useBoolean';
 import KebabDropdown from './kebab-dropdown';
 import { Labels } from './labels';
 import { ToggleGraph } from './metrics';
+import { PromQLExpressionInput } from './promql-expression-input';
 import { CreateSilence, EditSilence } from './silence-form';
 import { TargetsUI } from './targets';
 import { Alerts, AlertSource, MonitoringResource, Silences } from './types';
@@ -2415,6 +2416,43 @@ const PollerPages = () => {
   );
 };
 
+// Ad-hoc PromQL query browser, reachable from the Observe nav. Reads/writes the query as the
+// `query0` URL param so links generated elsewhere (alert graphs, the Prometheus UI redirect
+// below) can deep-link straight into a running query.
+const QueryBrowserPage: React.FC = () => {
+  const { t } = useTranslation();
+  const params = getURLSearchParams();
+  const [query, setQuery] = React.useState(params.query0 || '');
+  const [runQuery, setRunQuery] = React.useState(query);
+
+  return (
+    <>
+      <Helmet>
+        <title>{t('public~Metrics')}</title>
+      </Helmet>
+      <div className="co-m-pane__body">
+        <SectionHeading text={t('public~Metrics')} />
+        <div className="query-browser__query">
+          <PromQLExpressionInput
+            value={query}
+            onValueChange={setQuery}
+            onExecuteQuery={() => setRunQuery(query)}
+          />
+        </div>
+        <Button
+          className="query-browser__run-query-btn"
+          onClick={() => setRunQuery(query)}
+          type="button"
+          variant="primary"
+        >
+          {t('public~Run queries')}
+        </Button>
+        {runQuery && <QueryBrowser queries={[runQuery]} />}
+      </div>
+    </>
+  );
+};
+
 // Handles links that have the Prometheus UI's URL format (expected for links in alerts sent by
 // Alertmanager). The Prometheus UI specifies the PromQL query with the GET param `g0.expr`, so we
 // use that if it exists. Otherwise, just go to the query browser page with no query.
@@ -2435,7 +2473,8 @@ export const MonitoringUI = () => (
     <Route path="graph" element={<PrometheusUIRedirect />} />
     <Route path="silences/~new" element={<CreateSilence />} />
     <Route path="targets/*" element={<TargetsUI />} />
-    <Route element={PollerPages} />
+    <Route path="query-browser" element={<QueryBrowserPage />} />
+    <Route path="*" element={<PollerPages />} />
   </Routes>
 );
 
