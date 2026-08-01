@@ -3,16 +3,11 @@ import { Plugin, ModelDefinition, ModelFeatureFlag } from '@console/plugin-sdk';
 import { defaultDecoratorsPlugin } from './components/graph-view/components/nodes/decorators/defaultDecoratorsPlugin';
 import { TopologyDecoratorProvider } from './extensions';
 import * as models from './models';
-import {
-  OperatorsTopologyConsumedExtensions,
-  operatorsTopologyPlugin,
-} from './operators/operatorsTopologyPlugin';
 
-type ConsumedExtensions =
-  | ModelDefinition
-  | ModelFeatureFlag
-  | TopologyDecoratorProvider
-  | OperatorsTopologyConsumedExtensions;
+// Upstream also spreads in operatorsTopologyPlugin here, which grouped workloads by their
+// owning OLM operator (CSV). OLM isn't part of this fork, so that whole subtree
+// (src/operators/) was dropped along with its plugin registration.
+type ConsumedExtensions = ModelDefinition | ModelFeatureFlag | TopologyDecoratorProvider;
 
 const plugin: Plugin<ConsumedExtensions> = [
   {
@@ -21,7 +16,6 @@ const plugin: Plugin<ConsumedExtensions> = [
       models: _.values(models),
     },
   },
-  ...operatorsTopologyPlugin,
   ...defaultDecoratorsPlugin,
 ];
 

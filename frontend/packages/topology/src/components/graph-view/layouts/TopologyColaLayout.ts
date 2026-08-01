@@ -1,18 +1,9 @@
-import {
-  ColaLayout,
-  ColaNode,
-  ColaGroup,
-  ColaLink,
-  Graph,
-  GraphModel,
-} from '@patternfly/react-topology';
-import { layoutConstraints } from '@console/knative-plugin/src/topology/layouts/layoutConstraints';
+import { ColaLayout, Graph, GraphModel } from '@patternfly/react-topology';
 
+// Upstream overrides getConstraints() here to add Knative revision traffic-splitting layout
+// constraints. There are no Knative node types on vanilla Kubernetes, so this falls back to
+// ColaLayout's own getConstraints().
 class TopologyColaLayout extends ColaLayout {
-  protected getConstraints(nodes: ColaNode[], groups: ColaGroup[], edges: ColaLink[]): any[] {
-    return layoutConstraints(nodes, groups, edges, this.options);
-  }
-
   protected startLayout(
     graph: Graph<GraphModel, any>,
     initialRun: boolean,

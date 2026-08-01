@@ -2,25 +2,14 @@ import { Node, Edge, GraphElement } from '@patternfly/react-topology';
 import * as GitUrlParse from 'git-url-parse';
 import i18next from 'i18next';
 import * as _ from 'lodash';
-import { getRouteWebURL } from '@console/internal/components/routes';
-import {
-  K8sResourceKind,
-  K8sResourceKindReference,
-  modelFor,
-  referenceFor,
-  RouteKind,
-} from '@console/internal/module/k8s';
-import { RootState } from '@console/internal/redux';
-import { ALLOW_SERVICE_BINDING_FLAG } from '@console/service-binding-plugin/src/const';
+import { K8sResourceKind, K8sResourceKindReference, modelFor, referenceFor } from '@console/internal/module/k8s';
 import OdcBaseNode from '../elements/OdcBaseNode';
-import { TYPE_OPERATOR_BACKED_SERVICE } from '../operators/components/const';
 import { TopologyDataObject } from '../topology-types';
 import { updateResourceApplication } from './application-utils';
 import { createResourceConnection, removeResourceConnection } from './connector-utils';
 
 export const WORKLOAD_TYPES = [
   'deployments',
-  'deploymentConfigs',
   'daemonSets',
   'statefulSets',
   'jobs',
@@ -32,9 +21,6 @@ export type CheDecoratorData = {
   cheURL?: string;
   cheIconURL?: string;
 };
-
-export const getServiceBindingStatus = ({ FLAGS }: RootState): boolean =>
-  FLAGS.get(ALLOW_SERVICE_BINDING_FLAG);
 
 export const getCheDecoratorData = (consoleLinks: K8sResourceKind[]): CheDecoratorData => {
   const cheConsoleLink = _.find(consoleLinks, ['metadata.name', 'che']);
@@ -103,14 +89,11 @@ export const filterBasedOnActiveApplication = (
 };
 
 /**
- * get routes url
+ * Upstream resolves an OpenShift Route's web URL here. Routes don't exist on vanilla
+ * Kubernetes -- useRoutesURL()'s Route watch never returns any, so this always returns null.
  */
-export const getRoutesURL = (resource: K8sResourceKind, routes: RouteKind[]): string => {
-  if (routes.length > 0 && !_.isEmpty(routes[0].spec)) {
-    return getRouteWebURL(routes[0]);
-  }
-  return null;
-};
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getRoutesURL = (resource: K8sResourceKind, routes: unknown[]): string => null;
 
 export const getTopologyResourceObject = (topologyObject: TopologyDataObject): K8sResourceKind => {
   if (!topologyObject) {
@@ -143,13 +126,9 @@ export const updateTopologyResourceApplication = (
   const resources: K8sResourceKind[] = [];
   const updates: Promise<any>[] = [];
 
+  // Upstream also pushes each member resource of an operator-backed group here (OLM isn't part
+  // of this fork, so that node type never occurs).
   resources.push(resource);
-
-  if (item.getType() === TYPE_OPERATOR_BACKED_SERVICE) {
-    _.forEach(itemData.groupResources, (groupResource) => {
-      resources.push(groupResource.resource);
-    });
-  }
 
   for (const nextResource of resources) {
     const resourceKind = modelFor(referenceFor(nextResource));

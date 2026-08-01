@@ -32,6 +32,8 @@ export const namespacedPrefixes = [
   '/details',
   '/search',
   '/status',
+  '/topology',
+  '/helm-releases',
 ];
 
 export const stripBasePath = (path: string): string => path.replace(basePathPattern, '/');

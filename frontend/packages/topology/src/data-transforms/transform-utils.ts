@@ -4,7 +4,7 @@ import * as _ from 'lodash';
 import { WatchK8sResources, WatchK8sResults } from '@console/dynamic-plugin-sdk';
 import { getImageForIconClass } from '@console/internal/components/catalog/catalog-item-icon';
 import { Alerts } from '@console/internal/components/monitoring/types';
-import { BuildConfigModel, HorizontalPodAutoscalerModel } from '@console/internal/models';
+import { HorizontalPodAutoscalerModel } from '@console/internal/models';
 import {
   apiVersionForReference,
   isGroupVersionKind,
@@ -13,11 +13,6 @@ import {
   kindForReference,
   referenceFor,
 } from '@console/internal/module/k8s';
-import {
-  TYPE_EVENT_SOURCE,
-  TYPE_EVENT_SOURCE_KAFKA,
-  TYPE_KNATIVE_REVISION,
-} from '@console/knative-plugin/src/topology/const';
 import { isKnativeServing, OverviewItem } from '@console/shared';
 import {
   TYPE_APPLICATION_GROUP,
@@ -120,13 +115,7 @@ export const createTopologyNodeData = (
       vcsRef: deploymentsAnnotations['app.openshift.io/vcs-ref'],
       contextDir,
       builderImage: builderImageIcon || defaultIcon,
-      isKnativeResource:
-        type &&
-        (type === TYPE_EVENT_SOURCE ||
-          type === TYPE_KNATIVE_REVISION ||
-          type === TYPE_EVENT_SOURCE_KAFKA)
-          ? true
-          : isKnativeServing(resource, 'metadata.labels'),
+      isKnativeResource: isKnativeServing(resource, 'metadata.labels'),
     },
   };
 };
@@ -360,12 +349,6 @@ export const getWorkloadResources = (
 
 export const getBaseWatchedResources = (namespace: string): WatchK8sResources<any> => {
   return {
-    deploymentConfigs: {
-      isList: true,
-      kind: 'DeploymentConfig',
-      namespace,
-      optional: true,
-    },
     deployments: {
       isList: true,
       kind: 'Deployment',
@@ -411,12 +394,6 @@ export const getBaseWatchedResources = (namespace: string): WatchK8sResources<an
     hpas: {
       isList: true,
       kind: HorizontalPodAutoscalerModel.kind,
-      namespace,
-      optional: true,
-    },
-    buildConfigs: {
-      isList: true,
-      kind: BuildConfigModel.kind,
       namespace,
       optional: true,
     },

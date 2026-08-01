@@ -6,28 +6,20 @@ import { Link } from 'react-router-dom-v5-compat';
 import { CommonActionFactory } from '@console/app/src/actions/creators/common-factory';
 import { DeploymentActionFactory } from '@console/app/src/actions/creators/deployment-factory';
 import { Action, DetailsResourceAlertContent, useAccessReview } from '@console/dynamic-plugin-sdk';
-import {
-  DaemonSetModel,
-  DeploymentConfigModel,
-  DeploymentModel,
-  StatefulSetModel,
-} from '@console/internal/models';
+import { DaemonSetModel, DeploymentModel, StatefulSetModel } from '@console/internal/models';
 import {
   K8sResourceCondition,
   modelFor,
   referenceFor,
   referenceForModel,
 } from '@console/internal/module/k8s';
-import { ServiceModel as KnativeServiceModel } from '@console/knative-plugin';
 import { useTelemetry } from '@console/shared/src/hooks/useTelemetry';
 import { getResource } from '../../utils';
 
 const addHealthChecksRefs = [
-  referenceForModel(DeploymentConfigModel),
   referenceForModel(DeploymentModel),
   referenceForModel(DaemonSetModel),
   referenceForModel(StatefulSetModel),
-  referenceForModel(KnativeServiceModel),
 ];
 
 export const useHealthChecksAlert = (element: GraphElement): DetailsResourceAlertContent | null => {

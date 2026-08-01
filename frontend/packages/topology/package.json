@@ -10,9 +10,6 @@
     "test": "yarn --cwd ../.. test packages/topology"
   },
   "dependencies": {
-    "@console/dev-console": "0.0.0-fixed",
-    "@console/git-service": "0.0.0-fixed",
-    "@console/knative-plugin": "0.0.0-fixed",
     "@console/plugin-sdk": "0.0.0-fixed"
   },
   "consolePlugin": {
@@ -21,7 +18,7 @@
       "reduxReducer": "src/utils/reducer.ts",
       "workload": "src/components/workload",
       "actions": "src/actions/provider.ts",
-      "exportAppContext": "src/components/export-app/export-app-context.ts",
+      "page": "src/components/page",
       "applicationSidebar": "src/components/application-panel",
       "vcSidebar": "src/components/visual-connector"
     }

@@ -15,7 +15,6 @@ import {
   FileUploadContextType,
   FileUploadContext,
 } from '@console/app/src/components/file-upload/file-upload-context';
-import { useAddToProjectAccess } from '@console/dev-console/src/utils/useAddToProjectAccess';
 import {
   useResolvedExtensions,
   isTopologyCreateConnector as isDynamicTopologyCreateConnector,
@@ -35,7 +34,6 @@ import {
 } from '@console/internal/components/utils';
 import { getActiveApplication } from '@console/internal/reducers/ui';
 import { RootState } from '@console/internal/redux';
-import { getEventSourceStatus } from '@console/knative-plugin/src/topology/knative-topology-utils';
 import { useDeepCompareMemoize, useQueryParams } from '@console/shared';
 import { useTelemetry } from '@console/shared/src/hooks/useTelemetry';
 import { LAST_TOPOLOGY_OVERVIEW_OPEN_STORAGE_KEY } from '../../const';
@@ -124,7 +122,8 @@ export const ConnectedTopologyView: React.FC<ComponentProps> = ({
   const displayFilters = useDisplayFilters();
   const filters = useDeepCompareMemoize(displayFilters);
   const applicationRef = React.useRef<string>(null);
-  const createResourceAccess: string[] = useAddToProjectAccess(namespace);
+  // The S2I "Add from git" flow this drove doesn't exist on vanilla Kubernetes.
+  const createResourceAccess: string[] = [];
   const [isQuickSearchOpen, setIsQuickSearchOpen] = React.useState<boolean>(
     typeof getQueryArgument('catalogSearch') === 'string',
   );
@@ -434,7 +433,8 @@ export const ConnectedTopologyView: React.FC<ComponentProps> = ({
 const TopologyStateToProps = (state: RootState): StateProps => {
   return {
     application: getActiveApplication(state),
-    eventSourceEnabled: getEventSourceStatus(state),
+    // Knative Eventing, which this gated, isn't part of this fork.
+    eventSourceEnabled: false,
   };
 };
 

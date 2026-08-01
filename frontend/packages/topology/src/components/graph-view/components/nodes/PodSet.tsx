@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
-import { RevisionModel } from '@console/knative-plugin/src/models';
 import {
   PodRCData,
   PodStatus,
@@ -79,7 +78,7 @@ const PodSet: React.FC<PodSetProps> = React.memo(function PodSet({
   const hpaControlledScaling = !!hpa;
 
   const obj = data.current?.obj || data.obj;
-  const ownerKind = RevisionModel.kind === data.obj?.kind ? data.obj.kind : obj.kind;
+  const ownerKind = obj.kind;
   const { title, subTitle, titleComponent } = usePodRingLabel(
     obj,
     ownerKind,

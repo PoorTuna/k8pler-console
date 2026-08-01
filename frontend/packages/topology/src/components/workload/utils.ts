@@ -10,7 +10,6 @@ import {
 import { Extension } from '@console/dynamic-plugin-sdk/src/types';
 import { useK8sWatchResources } from '@console/internal/components/utils/k8s-watch-hook';
 import {
-  DeploymentConfigModel,
   DeploymentModel,
   DaemonSetModel,
   StatefulSetModel,
@@ -19,10 +18,8 @@ import {
   PodModel,
 } from '@console/internal/models';
 import {
-  BuildConfigData,
   getPodsForResource,
   getResourcesToWatchForPods,
-  useBuildConfigsWatcher,
   useJobsForCronJobWatcher,
   usePodsWatcher,
 } from '@console/shared';
@@ -40,10 +37,8 @@ export const getDataFromAdapter = <T extends { resource: K8sResourceCommon }, E 
     : undefined;
 
 const usePodsAdapterForWorkloads = (resource: K8sResourceCommon): PodsAdapterDataType => {
-  const buildConfigData = useBuildConfigsWatcher(resource);
   const { podData, loaded, loadError } = usePodsWatcher(resource);
-  return React.useMemo(() => ({ pods: podData?.pods, loaded, loadError, buildConfigData }), [
-    buildConfigData,
+  return React.useMemo(() => ({ pods: podData?.pods, loaded, loadError }), [
     loadError,
     loaded,
     podData,
@@ -60,7 +55,6 @@ export const podsAdapterForWorkloads = (
   if (
     !resource ||
     ![
-      DeploymentConfigModel.kind,
       DeploymentModel.kind,
       DaemonSetModel.kind,
       StatefulSetModel.kind,
@@ -72,27 +66,6 @@ export const podsAdapterForWorkloads = (
   return { resource, provider: usePodsAdapterForWorkloads };
 };
 
-export const buildsAdapterForWorkloads = (
-  element: GraphElement,
-): AdapterDataType<BuildConfigData> | undefined => {
-  const resource = getResource(element);
-  if (!resource) {
-    return undefined;
-  }
-  if (
-    !resource ||
-    ![
-      DeploymentConfigModel.kind,
-      DeploymentModel.kind,
-      DaemonSetModel.kind,
-      StatefulSetModel.kind,
-      CronJobModel.kind,
-    ].includes(resource.kind)
-  )
-    return undefined;
-  return { resource, provider: useBuildConfigsWatcher };
-};
-
 export const networkAdapterForWorkloads = (
   element: GraphElement,
 ): NetworkAdapterType | undefined => {
@@ -102,13 +75,9 @@ export const networkAdapterForWorkloads = (
   }
   if (
     !resource ||
-    ![
-      DeploymentConfigModel.kind,
-      DeploymentModel.kind,
-      DaemonSetModel.kind,
-      StatefulSetModel.kind,
-      PodModel.kind,
-    ].includes(resource.kind)
+    ![DeploymentModel.kind, DaemonSetModel.kind, StatefulSetModel.kind, PodModel.kind].includes(
+      resource.kind,
+    )
   )
     return undefined;
   return { resource };

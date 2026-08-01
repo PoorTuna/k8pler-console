@@ -1,12 +1,5 @@
 import * as React from 'react';
-import { Trans, useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom-v5-compat';
-import NamespacedPage, {
-  NamespacedPageVariants,
-} from '@console/dev-console/src/components/NamespacedPage';
-import CreateProjectListPage, {
-  CreateAProjectButton,
-} from '@console/dev-console/src/components/projects/CreateProjectListPage';
 import { withStartGuide } from '@console/internal/components/start-guide';
 import { removeQueryArgument, setQueryArgument } from '@console/internal/components/utils';
 import { useQueryParams, useUserSettingsCompatibility } from '@console/shared';
@@ -21,6 +14,8 @@ import { TOPOLOGY_SEARCH_FILTER_KEY } from '../../filters';
 import { FilterProvider } from '../../filters/FilterProvider';
 import { TopologyViewType } from '../../topology-types';
 import { usePreferredTopologyView } from '../../user-preferences/usePreferredTopologyView';
+import NamespacedPage, { NamespacedPageVariants } from './NamespacedPage';
+import SelectProjectEmptyState from './SelectProjectEmptyState';
 import TopologyDataRenderer from './TopologyDataRenderer';
 import TopologyPageToolbar from './TopologyPageToolbar';
 
@@ -35,21 +30,9 @@ type PageContentsProps = {
 };
 
 const PageContents: React.FC<PageContentsProps> = ({ viewType }) => {
-  const { t } = useTranslation();
   const { name: namespace } = useParams();
 
-  return namespace ? (
-    <TopologyDataRenderer viewType={viewType} />
-  ) : (
-    <CreateProjectListPage title={t('topology~Topology')}>
-      {(openProjectModal) => (
-        <Trans t={t} ns="topology">
-          Select a Project to view the topology
-          <CreateAProjectButton openProjectModal={openProjectModal} />.
-        </Trans>
-      )}
-    </CreateProjectListPage>
-  );
+  return namespace ? <TopologyDataRenderer viewType={viewType} /> : <SelectProjectEmptyState />;
 };
 
 const PageContentsWithStartGuide = withStartGuide(PageContents);

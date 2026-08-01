@@ -1,20 +1,25 @@
 [
   {
-    "type": "console.flag/model",
-    "properties": {
-      "model": {
-        "group": "primer.gitops.io",
-        "version": "v1alpha1",
-        "kind": "Export"
-      },
-      "flag": "ALLOW_EXPORT_APP"
-    }
-  },
-  {
     "type": "console.redux-reducer",
     "properties": {
       "scope": "devconsole",
       "reducer": { "$codeRef": "reduxReducer" }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
+      "path": "/topology",
+      "component": { "$codeRef": "page.NamespaceRedirect" }
+    }
+  },
+  {
+    "type": "console.page/route",
+    "properties": {
+      "exact": true,
+      "path": ["/topology/all-namespaces", "/topology/ns/:name"],
+      "component": { "$codeRef": "page.TopologyPage" }
     }
   },
   {
@@ -29,14 +34,6 @@
     "properties": {
       "id": "topology-side-bar-tab-resource",
       "label": "%topology~Resources%"
-    }
-  },
-  {
-    "type": "console.topology/details/tab-section",
-    "properties": {
-      "id": "topology-tab-section-deployment-config",
-      "tab": "topology-side-bar-tab-details",
-      "provider": { "$codeRef": "workload.useDeploymentConfigSideBarDetails" }
     }
   },
   {
@@ -114,14 +111,6 @@
   {
     "type": "console.topology/details/tab-section",
     "properties": {
-      "id": "topology-tab-section-builds-overview",
-      "tab": "topology-side-bar-tab-resource",
-      "provider": { "$codeRef": "workload.useBuildsSideBarTabSection" }
-    }
-  },
-  {
-    "type": "console.topology/details/tab-section",
-    "properties": {
       "id": "topology-tab-section-network-overview",
       "tab": "topology-side-bar-tab-resource",
       "provider": { "$codeRef": "workload.useNetworkingSideBarTabSection" }
@@ -147,14 +136,6 @@
     "properties": {
       "adapt": {
         "$codeRef": "workload.podsAdapterForCronJobWorkload"
-      }
-    }
-  },
-  {
-    "type": "console.topology/adapter/build",
-    "properties": {
-      "adapt": {
-        "$codeRef": "workload.buildsAdapterForWorkloads"
       }
     }
   },
@@ -189,16 +170,6 @@
       "contentProvider": {
         "$codeRef": "workload.useResourceQuotaAlert"
       }
-    }
-  },
-  {
-    "type": "console.context-provider",
-    "properties": {
-      "provider": { "$codeRef": "exportAppContext.ExportAppContextProvider" },
-      "useValueHook": { "$codeRef": "exportAppContext.useExportAppFormToast" }
-    },
-    "flags": {
-      "required": ["ALLOW_EXPORT_APP"]
     }
   },
   {

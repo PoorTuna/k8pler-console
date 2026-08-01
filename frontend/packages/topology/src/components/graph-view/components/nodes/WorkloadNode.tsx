@@ -22,12 +22,11 @@ import {
   getPodStatus,
   getSeverityAlertType,
   PodRCData,
-  useBuildConfigsWatcher,
   usePodsWatcher,
 } from '@console/shared';
 import { WithCreateConnectorProps } from '../../../../behavior/withCreateConnector';
 import { getFilterById, SHOW_POD_COUNT_FILTER_ID, useDisplayFilters } from '../../../../filters';
-import { getResource, getTopologyResourceObject } from '../../../../utils/topology-utils';
+import { getTopologyResourceObject } from '../../../../utils/topology-utils';
 import { useResourceQuotaAlert } from '../../../workload';
 import BaseNode from './BaseNode';
 import { getNodeDecorators } from './decorators/getNodeDecorators';
@@ -191,9 +190,6 @@ const WorkloadPodsNode: React.FC<WorkloadPodsNodeProps> = observer(function Work
   const { monitoringAlerts } = workloadData;
   const firingAlerts = getFiringAlerts(monitoringAlerts);
   const severityAlertType = getSeverityAlertType(firingAlerts);
-  const resource = getResource(element);
-  const { buildConfigs } = useBuildConfigsWatcher(resource);
-  const buildStatus = buildConfigs?.[0]?.builds?.[0]?.status?.phase;
   const pipelineStatus = element.getData()?.resources?.pipelineRunStatus ?? 'Unknown';
   const workloadRqAlert = useResourceQuotaAlert(element);
   const workloadRqAlertVariant = (workloadRqAlert?.variant as NodeStatus) || NodeStatus.default;
@@ -220,7 +216,7 @@ const WorkloadPodsNode: React.FC<WorkloadPodsNodeProps> = observer(function Work
             getAggregateStatus(
               donutStatus,
               severityAlertType,
-              buildStatus,
+              undefined,
               pipelineStatus,
               workloadRqAlertVariant,
             )

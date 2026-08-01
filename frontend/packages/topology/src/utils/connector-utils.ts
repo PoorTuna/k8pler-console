@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import * as _ from 'lodash';
 import { serviceBindingModal } from '@console/app/src/components/modals/service-binding';
-import { DeploymentConfigModel, DeploymentModel } from '@console/internal/models';
+import { DeploymentModel } from '@console/internal/models';
 import {
   k8sGet,
   k8sList,
@@ -50,7 +50,10 @@ export const listInstanceResources = (
     ...labelSelector,
   };
 
-  const kinds = ['ReplicationController', 'Route', 'Service', 'ReplicaSet', 'BuildConfig', 'Build'];
+  // Upstream also lists 'Route' and 'BuildConfig' here -- both OpenShift-only APIs that don't
+  // exist on vanilla Kubernetes, and unlike safeLoadList in application-utils.ts, k8sList here
+  // isn't wrapped to tolerate a 404, so keeping them would break every caller of this function.
+  const kinds = ['ReplicationController', 'Service', 'ReplicaSet'];
   _.forEach(kinds, (kind) => {
     lists.push(
       k8sList(modelFor(kind), {
@@ -244,10 +247,7 @@ const getSourceAndTargetForBinding = async (
       new Error(i18next.t('topology~Cannot do a contextual binding without a source')),
     );
   }
-  const linkingModelRefs = [
-    referenceForModel(DeploymentConfigModel),
-    referenceForModel(DeploymentModel),
-  ];
+  const linkingModelRefs = [referenceForModel(DeploymentModel)];
   let target;
   if (serviceBindingAvailable || !Array.isArray(resources)) {
     target = resources;

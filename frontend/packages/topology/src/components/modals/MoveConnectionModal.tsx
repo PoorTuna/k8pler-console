@@ -18,14 +18,6 @@ import {
 } from '@console/internal/components/factory/modal';
 import { PromiseComponent, ResourceIcon } from '@console/internal/components/utils';
 import { K8sResourceKind } from '@console/internal/module/k8s';
-import {
-  TYPE_EVENT_SOURCE_LINK,
-  TYPE_KAFKA_CONNECTION_LINK,
-} from '@console/knative-plugin/src/topology/const';
-import {
-  createEventSourceKafkaConnection,
-  createSinkConnection,
-} from '@console/knative-plugin/src/topology/knative-topology-utils';
 import { TYPE_CONNECTS_TO, TYPE_SERVICE_BINDING } from '../../const';
 import { createConnection } from '../../utils';
 
@@ -140,10 +132,6 @@ class MoveConnectionModal extends PromiseComponent<
         return createConnection(edge.getSource(), newTarget, edge.getTarget());
       case TYPE_SERVICE_BINDING:
         return createConnection(edge.getSource(), newTarget, edge.getTarget());
-      case TYPE_EVENT_SOURCE_LINK:
-        return createSinkConnection(edge.getSource(), newTarget);
-      case TYPE_KAFKA_CONNECTION_LINK:
-        return createEventSourceKafkaConnection(edge.getSource(), newTarget);
       default:
         return Promise.reject(
           new Error(
