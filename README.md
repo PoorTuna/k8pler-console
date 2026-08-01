@@ -8,19 +8,15 @@
   <a href="charts/k8pler-console"><img alt="Helm chart" src="https://img.shields.io/badge/helm-chart-0F1689.svg?logo=helm&logoColor=white"></a>
 </p>
 
-A web console for plain Kubernetes clusters, forked from the [OpenShift
-Console](https://github.com/openshift/console) (`release-4.16`, the "Bridge"
-codebase) and stripped of everything that only makes sense on OpenShift.
+Web console for vanilla Kubernetes. Forked from the [OpenShift
+Console](https://github.com/openshift/console) at `release-4.16` and stripped of
+everything OpenShift-specific.
 
-Where the upstream project assumes an OpenShift OAuth server, Projects,
-Routes, ImageStreams, BuildConfigs, DeploymentConfigs, and OLM/OperatorHub,
-this fork runs against a stock, unmodified Kubernetes API server and
-authenticates through OIDC — Dex, Keycloak, or any other OIDC-compliant
-identity provider. The upstream console architecture is otherwise untouched:
-a Go backend ("the bridge") that proxies the Kubernetes API and serves the
-frontend, plus a React/TypeScript single-page app. See
-[`NOTICE.md`](NOTICE.md) for exactly which upstream commit this was forked
-from and the license.
+It runs against a stock Kubernetes API server and authenticates through any
+OIDC-compliant provider — Dex, Keycloak, or your own. The architecture is
+upstream's: a Go backend ("the bridge") that proxies the Kubernetes API and
+serves a React/TypeScript single-page app. [`NOTICE.md`](NOTICE.md) records the
+exact fork point and license.
 
 ![k8pler-console](docs/screenshot.png)
 
@@ -28,21 +24,22 @@ from and the license.
 
 | Removed | Why |
 |---|---|
-| OLM / OperatorHub and every OLM-dependent operator plugin (GitOps, Insights, Knative, KubeVirt, Local Storage, Metal3, Pipelines, RHOAS, Service Binding, Shipwright, vSphere, Web Terminal, container security scanning) | OLM is an OpenShift-ecosystem package manager; none of these have a vanilla-Kubernetes equivalent, and they're unreachable without OLM installed anyway |
-| The Developer perspective (`dev-console`, `@console/topology`, `helm-plugin`, `git-service`) | Built around OpenShift's S2I build pipeline and `DeploymentConfig` rollout model, which don't exist on plain Kubernetes |
-| OAuth Users/Groups/Identities admin pages | Identity is now the OIDC provider's job |
-| BuildConfigs, Builds, ImageStreams, Templates, Routes, Projects (as a first-class concept) | OpenShift-only APIs. Namespaces and Ingress are the direct Kubernetes equivalents and are what the console now defaults to |
+| OLM / OperatorHub and every OLM-dependent plugin (GitOps, Insights, Knative, KubeVirt, Local Storage, Metal3, Pipelines, RHOAS, Service Binding, Shipwright, vSphere, Web Terminal, container security) | No vanilla-Kubernetes equivalent, and unreachable without OLM installed |
+| The Developer perspective (`dev-console`, `git-service`) | Built on S2I builds and `DeploymentConfig` rollouts |
+| OAuth Users/Groups/Identities pages | Identity is the OIDC provider's job |
+| BuildConfigs, Builds, ImageStreams, Templates, Routes, Projects | OpenShift-only APIs. Namespaces and Ingress replace them |
 
 | Kept / added | Notes |
 |---|---|
-| OIDC authentication (`--user-auth=oidc`) | The bridge already supported this upstream — no backend code changes were needed, only configuration. See [`docs/RUNNING-ON-KUBERNETES.md`](docs/RUNNING-ON-KUBERNETES.md) |
-| Namespaces, Ingress, native RBAC, workloads, storage, CRDs | All standard Kubernetes-native views, unaffected |
-| "Edit resource limits" modal | Ported out of the deleted `dev-console` package locally, since it's a generic Kubernetes feature worth keeping |
-| A [Helm chart](charts/k8pler-console) | Not present upstream; ships with a bundled Dex for quick starts |
+| OIDC authentication (`--user-auth=oidc`) | Already supported upstream; configuration only. See [`docs/RUNNING-ON-KUBERNETES.md`](docs/RUNNING-ON-KUBERNETES.md) |
+| Namespaces, Ingress, RBAC, workloads, storage, CRDs | Standard Kubernetes views, unchanged |
+| Topology | Restored from upstream and stripped of OLM/Knative/S2I coupling. Lives in the Administrator perspective, not a separate Developer one |
+| Helm releases | List, inspect, roll back, and uninstall releases. No chart catalog — that needs an OpenShift-only CRD this fork doesn't carry |
+| Observe (Alerts, Silences, Alerting rules, Metrics, Targets) | Backed by Prometheus/Alertmanager, bundled or external — see below |
+| "Edit resource limits" modal | Ported locally out of the deleted `dev-console` package |
+| A [Helm chart](charts/k8pler-console) | Not upstream. Ships a bundled Dex for quick starts, with optional bundled or external Prometheus |
 
 ## Quick start
-
-Helm chart:
 
 ```bash
 helm install k8pler-console ./charts/k8pler-console \
@@ -51,66 +48,51 @@ kubectl port-forward svc/k8pler-console 9000:80
 open http://localhost:9000
 ```
 
-Full example values (bundled-Dex quick start, production with an external
-OIDC provider and TLS ingress) and configuration reference:
+Other example values in
+[`charts/k8pler-console/examples/`](charts/k8pler-console/examples):
+`dex-quickstart`, `monitoring-quickstart`, `k3s-lan`, and `production` (external
+OIDC provider, TLS ingress). Full configuration reference:
 [`charts/k8pler-console/README.md`](charts/k8pler-console/README.md).
 
-Plain manifests instead of Helm: [`deploy/`](deploy/README.md) — a
-hand-written Dex + console + RBAC set, `kubectl apply -f` directly.
+Plain manifests instead of Helm: [`deploy/`](deploy/README.md), a hand-written
+Dex + console + RBAC set for `kubectl apply -f`.
 
 ## Architecture
 
-- **Backend ("the bridge")** — Go 1.21+, in `cmd/bridge` and `pkg/`. Proxies
-  the Kubernetes API under `/api/kubernetes`, serves the compiled frontend,
-  and handles authentication. Entirely configuration-driven — see
-  [`docs/RUNNING-ON-KUBERNETES.md`](docs/RUNNING-ON-KUBERNETES.md) for the
-  flags that matter on plain Kubernetes.
-- **Frontend** — React + TypeScript, in `frontend/`. Built with Yarn Berry
-  and webpack; the compiled output is what the bridge serves as static
-  assets. The active packages after the OpenShift-only strip-down are:
-  - [`console-app`](frontend/packages/console-app) — the Administrator
-    perspective: navigation, workloads, RBAC, storage, and the rest of the
-    core admin UI
-  - [`console-shared`](frontend/packages/console-shared) — components and
-    hooks shared across the app
-  - [`console-dynamic-plugin-sdk`](frontend/packages/console-dynamic-plugin-sdk)
-    [[API]](frontend/packages/console-dynamic-plugin-sdk/docs/api.md)
-    [[Console Extensions]](frontend/packages/console-dynamic-plugin-sdk/docs/console-extensions.md)
-    — the extension/plugin API the rest of the app is built on
-  - [`console-plugin-sdk`](frontend/packages/console-plugin-sdk),
-    [`console-plugin-shared`](frontend/packages/console-plugin-shared) —
-    plugin build tooling
-  - [`console-telemetry-plugin`](frontend/packages/console-telemetry-plugin)
-  - [`patternfly`](frontend/packages/patternfly) — PatternFly theming glue
-  - [`console-demo-plugin`](frontend/packages/console-demo-plugin) — example
-    dynamic plugin, dev/reference only
-  - [`eslint-plugin-console`](frontend/packages/eslint-plugin-console),
-    [`integration-tests-cypress`](frontend/packages/integration-tests-cypress)
-    — tooling, not shipped in the built app
+**Backend ("the bridge")** — Go 1.21+, in `cmd/bridge` and `pkg/`. Proxies the
+Kubernetes API under `/api/kubernetes`, serves the compiled frontend, and
+handles authentication. Configured entirely by flags; the ones that matter on
+plain Kubernetes are in
+[`docs/RUNNING-ON-KUBERNETES.md`](docs/RUNNING-ON-KUBERNETES.md).
+
+**Frontend** — React + TypeScript, in `frontend/`. Yarn Berry and webpack; the
+compiled output is what the bridge serves. Packages that ship:
+
+- [`console-app`](frontend/packages/console-app) — the Administrator
+  perspective: navigation, workloads, RBAC, storage, Helm releases
+- [`topology`](frontend/packages/topology) — the topology graph and list views
+- [`console-shared`](frontend/packages/console-shared) — shared components and
+  hooks
+- [`console-dynamic-plugin-sdk`](frontend/packages/console-dynamic-plugin-sdk) —
+  the extension API the app is built on
+  ([API](frontend/packages/console-dynamic-plugin-sdk/docs/api.md),
+  [extensions](frontend/packages/console-dynamic-plugin-sdk/docs/console-extensions.md))
+- `console-plugin-sdk`, `console-plugin-shared`, `console-telemetry-plugin`,
+  `patternfly`
+
+`console-demo-plugin`, `eslint-plugin-console`, and `integration-tests-cypress`
+are development tooling and are not built into the app.
 
 ## Building from source
 
-### Dependencies
-
-- [Go](https://golang.org/) 1.21+
-- [Node.js](https://nodejs.org/) 22+ with [corepack](https://npmjs.com/package/corepack) enabled (for Yarn Berry)
-- `kubectl` and a Kubernetes cluster to point it at
-- Docker, if you want to build the container image rather than run the
-  binaries directly (recommended on Windows/macOS — the shell scripts below
-  assume a POSIX environment)
-
-### Build everything
+Requires Go 1.21+, Node.js 22+ with
+[corepack](https://npmjs.com/package/corepack) enabled, `kubectl`, and a cluster
+to point it at. Docker if you would rather build the image than the binaries —
+recommended on Windows and macOS, since the build scripts assume POSIX.
 
 ```bash
-./build.sh
-```
-
-This runs `build-backend.sh` (outputs `bin/bridge`), `build-frontend.sh`
-(outputs `frontend/public/dist`), and `build-demos.sh` (builds the
-`dynamic-demo-plugin` sample plugin), or build the container image directly:
-
-```bash
-docker build -t k8pler-console:latest .
+./build.sh                               # bin/bridge, frontend/public/dist, demo plugin
+docker build -t k8pler-console:latest .  # or just the container image
 ```
 
 ### Run against a cluster
@@ -128,28 +110,35 @@ export KUBECONFIG=/path/to/kubeconfig
   -base-address http://localhost:9000
 ```
 
-Runs at [localhost:9000](http://localhost:9000). Full flag reference,
-including the `disabled`-auth path for local dev with no OIDC provider, is
-in [`docs/RUNNING-ON-KUBERNETES.md`](docs/RUNNING-ON-KUBERNETES.md).
+Serves [localhost:9000](http://localhost:9000). Full flag reference, including
+the `disabled`-auth path for local development without an OIDC provider:
+[`docs/RUNNING-ON-KUBERNETES.md`](docs/RUNNING-ON-KUBERNETES.md).
 
-### Frontend interactive development
+### Frontend development
 
 ```bash
 cd frontend
-yarn install       # once, and whenever dependencies change
-yarn run dev        # watches and recompiles on change
+yarn install    # once, and whenever dependencies change
+yarn run dev    # watches and recompiles on change
 ```
 
-Set `HOT_RELOAD=false` to disable hot reloading. If changes stop being
-picked up, raise `fs.inotify.max_user_watches` — see the
+`HOT_RELOAD=false` disables hot reloading. If changes stop registering, raise
+`fs.inotify.max_user_watches` — see the
 [webpack docs](https://webpack.js.org/configuration/watch/#not-enough-watchers).
+
+Building natively on Windows requires this repo's pinned Yarn (`corepack
+enable` first) and a clean `node_modules` install from a native shell —
+`.yarnrc.yml` only lists `linux`/`darwin` in `supportedArchitectures`, so an
+install run under Git Bash/MSYS can silently create WSL-style symlinks that
+neither Node nor the TypeScript compiler can resolve. Windows/macOS users are
+still better off with WSL or Docker.
 
 ## Testing
 
 ```bash
-./test.sh              # everything
-./test-backend.sh       # Go tests only
-./test-frontend.sh      # Jest tests only
+./test.sh           # everything
+./test-backend.sh   # Go only
+./test-frontend.sh  # Jest only
 ```
 
 Cypress integration tests live in
@@ -163,16 +152,14 @@ yarn run test-cypress-console
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for workflow conventions and
-[`STYLEGUIDE.md`](STYLEGUIDE.md) for code style. Both predate this fork and
-are still accurate for day-to-day frontend/backend development; they don't
-cover anything OpenShift-specific.
+[`CONTRIBUTING.md`](CONTRIBUTING.md) covers workflow conventions,
+[`STYLEGUIDE.md`](STYLEGUIDE.md) code style. Both are inherited from upstream
+and still apply.
 
-Dependency versions should be pinned exactly (no `^` ranges). When updating
-backend dependencies: edit `go.mod`, run `go mod tidy && go mod vendor`,
-and commit the `vendor/` change separately from the code change it supports.
-When updating frontend dependencies: `yarn add <package@version>` or
-`yarn up <package@version>` from `frontend/`.
+Pin dependency versions exactly — no `^` ranges. For the backend: edit `go.mod`,
+run `go mod tidy && go mod vendor`, and commit the `vendor/` change separately
+from the code change it supports. For the frontend: `yarn add <package@version>`
+or `yarn up <package@version>` from `frontend/`.
 
 ## Internationalization
 
