@@ -313,6 +313,7 @@ const config: Configuration = {
     new CopyWebpackPlugin([{ from: './packages/console-app/locales', to: 'locales' }]),
     new CopyWebpackPlugin([{ from: './packages/patternfly/locales', to: 'locales' }]),
     new CopyWebpackPlugin([{ from: './packages/console-telemetry-plugin/locales', to: 'locales' }]),
+    new CopyWebpackPlugin([{ from: './packages/topology/locales', to: 'locales' }]),
     extractCSS,
     virtualModules,
     new ConsoleActivePluginsModule(resolvePluginPackages(), virtualModules),
