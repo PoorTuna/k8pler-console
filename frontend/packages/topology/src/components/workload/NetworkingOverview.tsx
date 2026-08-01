@@ -1,10 +1,9 @@
 import * as React from 'react';
 import { LongArrowAltRightIcon } from '@patternfly/react-icons/dist/esm/icons/long-arrow-alt-right-icon';
 import { useTranslation } from 'react-i18next';
-import { RouteLocation } from '@console/internal/components/routes';
 import { ResourceLink, SidebarSectionHeading } from '@console/internal/components/utils';
-import { K8sResourceKind, RouteKind } from '@console/internal/module/k8s';
-import { useRoutesWatcher, useServicesWatcher } from '@console/shared';
+import { K8sResourceKind } from '@console/internal/module/k8s';
+import { useServicesWatcher } from '@console/shared';
 
 const ServicePortList: React.FC<ServicePortListProps> = ({ service }) => {
   const ports = service.spec?.ports ?? [];
@@ -43,33 +42,14 @@ const ServicesOverviewList: React.FC<ServiceOverviewListProps> = ({ services }) 
   </ul>
 );
 
-const RoutesOverviewListItem: React.FC<RoutesOverviewListItemProps> = ({ route }) => {
-  const { name, namespace } = route.metadata;
-  const { t } = useTranslation();
-  return (
-    <li className="list-group-item">
-      <ResourceLink kind="Route" name={name} namespace={namespace} />
-      <span className="text-muted">{t('topology~Location:')}</span>
-      <RouteLocation obj={route} />
-    </li>
-  );
-};
-
-const RoutesOverviewList: React.FC<RoutesOverviewListProps> = ({ routes }) => (
-  <ul className="list-group">
-    {routes?.map((route) => (
-      <RoutesOverviewListItem key={route.metadata.uid} route={route} />
-    ))}
-  </ul>
-);
-
+// Upstream also lists Routes here. Routes are an OpenShift-only API with no vanilla-Kubernetes
+// equivalent (Ingress isn't 1:1 with a workload the way a Route often is), so that section is
+// dropped rather than always rendering empty.
 export const NetworkingOverview: React.FC<NetworkingOverviewProps> = ({ obj }) => {
   const { t } = useTranslation();
   const serviceResources = useServicesWatcher(obj);
   const services =
     serviceResources.loaded && !serviceResources.loadError ? serviceResources.services : [];
-  const routeResources = useRoutesWatcher(obj);
-  const routes = routeResources.loaded && !routeResources.loadError ? routeResources.routes : [];
   return (
     <>
       <SidebarSectionHeading text={t('topology~Services')} />
@@ -78,23 +58,8 @@ export const NetworkingOverview: React.FC<NetworkingOverviewProps> = ({ obj }) =
       ) : (
         <ServicesOverviewList services={services} />
       )}
-
-      <SidebarSectionHeading text={t('topology~Routes')} />
-      {!(routes?.length > 0) ? (
-        <span className="text-muted">{t('topology~No Routes found for this resource.')}</span>
-      ) : (
-        <RoutesOverviewList routes={routes} />
-      )}
     </>
   );
-};
-
-type RoutesOverviewListProps = {
-  routes: RouteKind[];
-};
-
-type RoutesOverviewListItemProps = {
-  route: RouteKind;
 };
 
 type NetworkingOverviewProps = {

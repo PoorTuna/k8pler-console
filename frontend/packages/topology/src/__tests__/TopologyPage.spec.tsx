@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { shallow } from 'enzyme';
 import * as Router from 'react-router-dom-v5-compat';
-import NamespacedPage from '@console/dev-console/src/components/NamespacedPage';
 import { useK8sWatchResources } from '@console/internal/components/utils/k8s-watch-hook';
 import { useQueryParams, useUserSettingsCompatibility } from '@console/shared/src';
+import NamespacedPage from '../components/page/NamespacedPage';
 import { TopologyPage } from '../components/page/TopologyPage';
 import { TopologyViewType } from '../topology-types';
 import { usePreferredTopologyView } from '../user-preferences/usePreferredTopologyView';

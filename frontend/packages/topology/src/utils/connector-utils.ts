@@ -1,28 +1,14 @@
 import i18next from 'i18next';
 import * as _ from 'lodash';
-import { serviceBindingModal } from '@console/app/src/components/modals/service-binding';
-import { DeploymentModel } from '@console/internal/models';
 import {
-  k8sGet,
   k8sList,
   k8sPatch,
   K8sResourceKind,
   modelFor,
   referenceFor,
-  referenceForModel,
 } from '@console/internal/module/k8s';
 
 export type ConnectsToData = { apiVersion: string; kind: string; name: string };
-
-const fetchResource = async (source: string, namespace: string) => {
-  const [groupVersionKind, resourceName] = source.split('/');
-  const contextualResource: K8sResourceKind = await k8sGet(
-    modelFor(groupVersionKind),
-    resourceName,
-    namespace,
-  );
-  return contextualResource;
-};
 
 export const edgesFromAnnotations = (annotations): (string | ConnectsToData)[] => {
   let edges: (string | ConnectsToData)[] = [];
@@ -237,68 +223,8 @@ export const removeResourceConnection = (
   });
 };
 
-const getSourceAndTargetForBinding = async (
-  resources: K8sResourceKind[] | K8sResourceKind,
-  contextualSource: string,
-  serviceBindingAvailable?: boolean,
-): Promise<{ source: K8sResourceKind; target: K8sResourceKind }> => {
-  if (!contextualSource) {
-    return Promise.reject(
-      new Error(i18next.t('topology~Cannot do a contextual binding without a source')),
-    );
-  }
-  const linkingModelRefs = [referenceForModel(DeploymentModel)];
-  let target;
-  if (serviceBindingAvailable || !Array.isArray(resources)) {
-    target = resources;
-  } else {
-    target = (resources as K8sResourceKind[]).find((resource) =>
-      linkingModelRefs.includes(referenceFor(resource)),
-    );
-  }
-  const {
-    metadata: { namespace },
-  } = target;
-  const source: K8sResourceKind = await fetchResource(contextualSource, namespace);
-  if (!source) {
-    return Promise.reject(
-      new Error(
-        i18next.t(
-          'topology~Cannot find resource ({{contextualSource}}) to do a contextual binding to',
-          {
-            contextualSource,
-          },
-        ),
-      ),
-    );
-  }
-
-  return { source, target };
-};
-
-export const doConnectsToBinding = async (
-  resources: K8sResourceKind[],
-  contextualSource: string,
-): Promise<K8sResourceKind[]> => {
-  const { source, target } = await getSourceAndTargetForBinding(resources, contextualSource);
-  if (!target) {
-    // Not a resource we want to connect to
-    return resources;
-  }
-  await createResourceConnection(source, target);
-
-  return resources;
-};
-
-export const doContextualBinding = async (
-  target: K8sResourceKind,
-  contextualSource: string,
-): Promise<K8sResourceKind> => {
-  const { source } = await getSourceAndTargetForBinding(target, contextualSource, true);
-  serviceBindingModal({
-    model: modelFor(referenceFor(source)),
-    source,
-    target,
-  });
-  return target;
-};
+// Upstream also exports doConnectsToBinding/doContextualBinding here, which drove the quick
+// search "connect to source" flow's Service Binding option via @console/app's serviceBindingModal.
+// The Service Binding Operator is OLM-installed and isn't part of this fork (that modal was
+// deleted from console-app along with it), and nothing else in this package calls either
+// function, so they're dropped along with their shared getSourceAndTargetForBinding helper.

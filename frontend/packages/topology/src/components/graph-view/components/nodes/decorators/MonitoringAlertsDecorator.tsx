@@ -2,9 +2,6 @@ import * as React from 'react';
 import { Tooltip, TooltipPosition } from '@patternfly/react-core';
 import { Node, SELECTION_EVENT } from '@patternfly/react-topology';
 import { useTranslation } from 'react-i18next';
-import { connect } from 'react-redux';
-import { Dispatch } from 'redux';
-import { selectOverviewDetailsTab } from '@console/internal/actions/ui';
 import {
   getSeverityAlertType,
   getFiringAlerts,
@@ -13,14 +10,6 @@ import {
 } from '@console/shared';
 import Decorator from './Decorator';
 
-type DispatchProps = {
-  showMonitoringOverview?: () => void;
-};
-
-const dispatchToProps = (dispatch: Dispatch): DispatchProps => ({
-  showMonitoringOverview: () => dispatch(selectOverviewDetailsTab('Observe')),
-});
-
 interface MonitoringAlertsDecoratorProps {
   element: Node;
   radius: number;
@@ -28,14 +17,15 @@ interface MonitoringAlertsDecoratorProps {
   y: number;
 }
 
-type MonitoringAlertsDecoratorType = MonitoringAlertsDecoratorProps & DispatchProps;
-
-const MonitoringAlertsDecorator: React.FC<MonitoringAlertsDecoratorType> = ({
+// Upstream also switches the sidebar to its "Observe" tab here via the
+// UI.overview.selectedDetailsTab redux slice, which was dev-console's project-overview sidebar
+// state and was removed with the rest of dev-console (see SideBarBody.tsx). Clicking the
+// decorator still opens the sidebar, just on whichever tab was last selected.
+const MonitoringAlertsDecorator: React.FC<MonitoringAlertsDecoratorProps> = ({
   element,
   radius,
   x,
   y,
-  showMonitoringOverview,
 }) => {
   const ref = React.useRef();
   const { t } = useTranslation();
@@ -46,7 +36,6 @@ const MonitoringAlertsDecorator: React.FC<MonitoringAlertsDecoratorType> = ({
 
   const showSidebar = (e: React.MouseEvent) => {
     e.stopPropagation();
-    showMonitoringOverview();
     element.getGraph().getController().fireEvent(SELECTION_EVENT, [element.getId()]);
   };
 
@@ -66,7 +55,4 @@ const MonitoringAlertsDecorator: React.FC<MonitoringAlertsDecoratorType> = ({
   );
 };
 
-export default connect<null, DispatchProps, MonitoringAlertsDecoratorProps>(
-  null,
-  dispatchToProps,
-)(MonitoringAlertsDecorator);
+export default MonitoringAlertsDecorator;

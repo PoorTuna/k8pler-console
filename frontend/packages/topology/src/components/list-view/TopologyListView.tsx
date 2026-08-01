@@ -10,17 +10,10 @@ import {
   Model,
 } from '@patternfly/react-topology';
 import * as _ from 'lodash';
-import { connect } from 'react-redux';
-import { Alert } from '@console/dynamic-plugin-sdk';
-import { alertingLoaded } from '@console/internal/actions/observe';
-import * as UIActions from '@console/internal/actions/ui';
-import { OverviewMetrics } from '@console/internal/components/overview/metricUtils';
 import { useQueryParams } from '@console/shared';
 import { withFallback, ErrorBoundaryFallbackPage } from '@console/shared/src/components/error';
 import { TYPE_APPLICATION_GROUP } from '../../const';
 import { odcElementFactory } from '../../elements';
-import { subscribeOverviewAlerts } from '../utils/subscribeOverviewAlerts';
-import { subscribeOverviewMetrics } from '../utils/subscribeOverviewMetrics';
 import { getChildKinds, sortGroupChildren } from './list-view-utils';
 import TopologyListViewAppGroup from './TopologyListViewAppGroup';
 import TopologyListViewUnassignedGroup from './TopologyListViewUnassignedGroup';
@@ -117,15 +110,6 @@ const listModel: Model = {
     type: 'graph',
   },
 };
-interface TopologyListViewPropsFromState {
-  metrics: OverviewMetrics;
-}
-
-interface TopologyListViewPropsFromDispatch {
-  updateMetrics: (metrics: OverviewMetrics) => void;
-  updateMonitoringAlerts: (alerts: Alert[]) => void;
-}
-
 interface TopologyListViewProps {
   model: Model;
   namespace: string;
@@ -133,212 +117,185 @@ interface TopologyListViewProps {
   setVisualization: (vis: Visualization) => void;
 }
 
-const ConnectedTopologyListView: React.FC<
-  TopologyListViewProps & TopologyListViewPropsFromDispatch & TopologyListViewPropsFromState
-> = observer(function TopologyListView({
-  model,
-  onSelect,
-  setVisualization,
-  namespace,
-  metrics,
-  updateMetrics,
-  updateMonitoringAlerts,
-}) {
-  const queryParams = useQueryParams();
-  const selectedId = queryParams.get('selectId');
-  const [visualizationReady, setVisualizationReady] = React.useState<boolean>(false);
+// Upstream also subscribes here to per-namespace pod metrics/alerts (via the dev-console-only
+// UI.overview redux slice and @console/internal/components/overview/metricUtils, both removed
+// with dev-console) to feed the CPU/memory/alert cells in each row. Those cells now source their
+// own data directly (see list-view/cells), so this component no longer needs to.
+const ConnectedTopologyListView: React.FC<TopologyListViewProps> = observer(
+  function TopologyListView({ model, onSelect, setVisualization }) {
+    const queryParams = useQueryParams();
+    const selectedId = queryParams.get('selectId');
+    const [visualizationReady, setVisualizationReady] = React.useState<boolean>(false);
 
-  const createVisualization = () => {
-    const newVisualization = new Visualization();
-    newVisualization.registerElementFactory(odcElementFactory);
-    newVisualization.fromModel(listModel);
-    return newVisualization;
-  };
+    const createVisualization = () => {
+      const newVisualization = new Visualization();
+      newVisualization.registerElementFactory(odcElementFactory);
+      newVisualization.fromModel(listModel);
+      return newVisualization;
+    };
 
-  const visualizationRef = React.useRef<Visualization>();
-  if (!visualizationRef.current) {
-    visualizationRef.current = createVisualization();
-  }
-
-  const visualization = visualizationRef.current;
-
-  React.useEffect(() => {
-    if (visualization) {
-      setVisualization(visualization);
+    const visualizationRef = React.useRef<Visualization>();
+    if (!visualizationRef.current) {
+      visualizationRef.current = createVisualization();
     }
-  }, [setVisualization, visualization]);
 
-  React.useEffect(() => {
-    if (model) {
-      // Clear out any layout that might have been saved
-      if (model.graph?.layout) {
-        delete model.graph.layout;
+    const visualization = visualizationRef.current;
+
+    React.useEffect(() => {
+      if (visualization) {
+        setVisualization(visualization);
       }
-      visualization.fromModel(model);
-      const selectedItem = selectedId ? visualization.getElementById(selectedId) : null;
-      if (!selectedItem || !selectedItem.isVisible()) {
-        onSelect();
-      } else {
-        onSelect(selectedItem);
+    }, [setVisualization, visualization]);
+
+    React.useEffect(() => {
+      if (model) {
+        // Clear out any layout that might have been saved
+        if (model.graph?.layout) {
+          delete model.graph.layout;
+        }
+        visualization.fromModel(model);
+        const selectedItem = selectedId ? visualization.getElementById(selectedId) : null;
+        if (!selectedItem || !selectedItem.isVisible()) {
+          onSelect();
+        } else {
+          onSelect(selectedItem);
+        }
       }
-    }
-    setVisualizationReady(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [model, onSelect, visualization]);
+      setVisualizationReady(true);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [model, onSelect, visualization]);
 
-  const nodes = visualization.getElements().filter((e) => isNode(e)) as Node[];
-  const applicationGroups = nodes.filter((n) => n.getType() === TYPE_APPLICATION_GROUP);
-  applicationGroups.sort((a, b) => a.getLabel().localeCompare(b.getLabel()));
-  const unassignedItems = nodes.filter(
-    (n) => n.getType() !== TYPE_APPLICATION_GROUP && isGraph(n.getParent()) && n.isVisible(),
-  );
+    const nodes = visualization.getElements().filter((e) => isNode(e)) as Node[];
+    const applicationGroups = nodes.filter((n) => n.getType() === TYPE_APPLICATION_GROUP);
+    applicationGroups.sort((a, b) => a.getLabel().localeCompare(b.getLabel()));
+    const unassignedItems = nodes.filter(
+      (n) => n.getType() !== TYPE_APPLICATION_GROUP && isGraph(n.getParent()) && n.isVisible(),
+    );
 
-  React.useLayoutEffect(() => {
-    if (visualizationReady && selectedId) {
-      const element = document.getElementById(selectedId);
-      if (element) {
-        element.scrollIntoView({ block: 'nearest' });
+    React.useLayoutEffect(() => {
+      if (visualizationReady && selectedId) {
+        const element = document.getElementById(selectedId);
+        if (element) {
+          element.scrollIntoView({ block: 'nearest' });
+        }
       }
-    }
-  }, [selectedId, visualizationReady]);
+    }, [selectedId, visualizationReady]);
 
-  React.useEffect(() => {
-    const getFlattenedItems = (): Node[] => {
-      const flattened = [];
-      const addFlattenedNode = (node: Node) => {
-        if (node) {
-          flattened.push(node);
-          const childNodes = sortGroupChildren(node.getChildren());
-          childNodes.forEach((child) => {
-            if (isNode(child)) {
-              addFlattenedNode(child);
-            }
+    React.useEffect(() => {
+      const getFlattenedItems = (): Node[] => {
+        const flattened = [];
+        const addFlattenedNode = (node: Node) => {
+          if (node) {
+            flattened.push(node);
+            const childNodes = sortGroupChildren(node.getChildren());
+            childNodes.forEach((child) => {
+              if (isNode(child)) {
+                addFlattenedNode(child);
+              }
+            });
+          }
+        };
+
+        const addFlattenedKinds = (children: GraphElement[]) => {
+          const { kindsMap, kindKeys } = getChildKinds(children);
+          kindKeys.forEach((key) => {
+            kindsMap[key]
+              .sort((a, b) => a.getLabel().localeCompare(b.getLabel()))
+              .forEach((child) => {
+                addFlattenedNode(child);
+              });
           });
+        };
+
+        applicationGroups.forEach((appGroup) => {
+          flattened.push(appGroup);
+          addFlattenedKinds(appGroup.getChildren());
+        });
+        addFlattenedKinds(unassignedItems);
+        return flattened;
+      };
+
+      const selectPrevious = () => {
+        const flattenedItems = getFlattenedItems();
+        const index = flattenedItems.findIndex((item) => selectedId === item.getId());
+        if (index > 0) {
+          onSelect(flattenedItems[index - 1]);
         }
       };
 
-      const addFlattenedKinds = (children: GraphElement[]) => {
-        const { kindsMap, kindKeys } = getChildKinds(children);
-        kindKeys.forEach((key) => {
-          kindsMap[key]
-            .sort((a, b) => a.getLabel().localeCompare(b.getLabel()))
-            .forEach((child) => {
-              addFlattenedNode(child);
-            });
-        });
+      const onEnter = (e: KeyboardEvent) => {
+        const target = e.target as HTMLElement;
+        const entity = target?.id && visualization.getElementById(target.id);
+        entity && onSelect(entity);
       };
 
-      applicationGroups.forEach((appGroup) => {
-        flattened.push(appGroup);
-        addFlattenedKinds(appGroup.getChildren());
-      });
-      addFlattenedKinds(unassignedItems);
-      return flattened;
-    };
+      const selectNext = () => {
+        const flattenedItems = getFlattenedItems();
+        const index = flattenedItems.findIndex((item) => selectedId === item.getId());
+        if (index < flattenedItems.length - 1) {
+          onSelect(flattenedItems[index + 1]);
+        }
+      };
 
-    const selectPrevious = () => {
-      const flattenedItems = getFlattenedItems();
-      const index = flattenedItems.findIndex((item) => selectedId === item.getId());
-      if (index > 0) {
-        onSelect(flattenedItems[index - 1]);
+      const stopEvent = (e: KeyboardEvent) => {
+        document.activeElement instanceof HTMLElement && document.activeElement.blur();
+        e.stopPropagation();
+        e.preventDefault();
+      };
+
+      const onKeyDown = (e: KeyboardEvent) => {
+        const { nodeName } = e.target as Element;
+        if (nodeName === 'INPUT' || nodeName === 'TEXTAREA') {
+          return;
+        }
+
+        switch (e.key) {
+          case 'Escape':
+            stopEvent(e);
+            onSelect();
+            break;
+          case 'Enter':
+            stopEvent(e);
+            onEnter(e);
+            break;
+          case 'k':
+          case 'ArrowUp':
+            stopEvent(e);
+            selectPrevious();
+            break;
+          case 'j':
+          case 'ArrowDown':
+            stopEvent(e);
+            selectNext();
+            break;
+          default:
+            break;
+        }
+      };
+
+      if (visualization) {
+        window.addEventListener('keydown', onKeyDown);
       }
-    };
+      return () => {
+        window.removeEventListener('keydown', onKeyDown);
+      };
+    }, [visualization, selectedId, applicationGroups, unassignedItems, onSelect]);
 
-    const onEnter = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      const entity = target?.id && visualization.getElementById(target.id);
-      entity && onSelect(entity);
-    };
-
-    const selectNext = () => {
-      const flattenedItems = getFlattenedItems();
-      const index = flattenedItems.findIndex((item) => selectedId === item.getId());
-      if (index < flattenedItems.length - 1) {
-        onSelect(flattenedItems[index + 1]);
-      }
-    };
-
-    const stopEvent = (e: KeyboardEvent) => {
-      document.activeElement instanceof HTMLElement && document.activeElement.blur();
-      e.stopPropagation();
-      e.preventDefault();
-    };
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      const { nodeName } = e.target as Element;
-      if (nodeName === 'INPUT' || nodeName === 'TEXTAREA') {
-        return;
-      }
-
-      switch (e.key) {
-        case 'Escape':
-          stopEvent(e);
-          onSelect();
-          break;
-        case 'Enter':
-          stopEvent(e);
-          onEnter(e);
-          break;
-        case 'k':
-        case 'ArrowUp':
-          stopEvent(e);
-          selectPrevious();
-          break;
-        case 'j':
-        case 'ArrowDown':
-          stopEvent(e);
-          selectNext();
-          break;
-        default:
-          break;
-      }
-    };
-
-    if (visualization) {
-      window.addEventListener('keydown', onKeyDown);
-    }
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-    };
-  }, [visualization, selectedId, applicationGroups, unassignedItems, onSelect]);
-
-  React.useEffect(() => {
-    const clearMetricsInterval = subscribeOverviewMetrics(namespace, metrics, updateMetrics);
-    const clearAlertsInterval = subscribeOverviewAlerts(namespace, updateMonitoringAlerts);
-
-    return () => {
-      clearMetricsInterval();
-      clearAlertsInterval();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [namespace, updateMetrics, updateMonitoringAlerts]);
-
-  return (
-    <TopologyListViewComponent
-      visualizationReady={visualizationReady}
-      visualization={visualization}
-      selectedId={selectedId}
-      onSelect={onSelect}
-      applicationGroups={applicationGroups}
-      unassignedItems={unassignedItems}
-    />
-  );
-});
-
-const stateToProps = ({ UI }): TopologyListViewPropsFromState => {
-  return { metrics: UI.get('overview').toJS() };
-};
-
-const dispatchToProps = (dispatch): TopologyListViewPropsFromDispatch => ({
-  updateMetrics: (metrics: OverviewMetrics) => dispatch(UIActions.updateOverviewMetrics(metrics)),
-  updateMonitoringAlerts: (alerts: Alert[]) => dispatch(alertingLoaded('devAlerts', alerts, 'dev')),
-});
+    return (
+      <TopologyListViewComponent
+        visualizationReady={visualizationReady}
+        visualization={visualization}
+        selectedId={selectedId}
+        onSelect={onSelect}
+        applicationGroups={applicationGroups}
+        unassignedItems={unassignedItems}
+      />
+    );
+  },
+);
 
 const TopologyListView = withFallback(
-  connect<TopologyListViewPropsFromState, TopologyListViewPropsFromDispatch, TopologyListViewProps>(
-    stateToProps,
-    dispatchToProps,
-  )(React.memo(ConnectedTopologyListView)),
+  React.memo(ConnectedTopologyListView),
   ErrorBoundaryFallbackPage,
 );
 

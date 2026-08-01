@@ -21,7 +21,6 @@ describe('Graph', () => {
         viewType={TopologyViewType.graph}
         application={''}
         eventSourceEnabled
-        onSelectTab={() => {}}
         onSupportedFiltersChange={() => {}}
         onSupportedKindsChange={() => {}}
       />,

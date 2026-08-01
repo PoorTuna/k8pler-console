@@ -24,7 +24,7 @@ export const parseHelmManifest = (manifest: string): ManifestResource[] => {
       const namespace = metadataBlock
         .match(/^\s+namespace:\s*["']?([^"'\n]+)["']?\s*$/m)?.[1]
         ?.trim();
-      return kind && name ? { apiVersion, kind, name, namespace } : null;
+      return kind && name ? ({ apiVersion, kind, name, namespace } as ManifestResource) : null;
     })
     .filter((resource): resource is ManifestResource => resource !== null);
 };

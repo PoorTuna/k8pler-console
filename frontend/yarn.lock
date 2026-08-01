@@ -1571,6 +1571,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@console/topology@workspace:packages/topology":
+  version: 0.0.0-use.local
+  resolution: "@console/topology@workspace:packages/topology"
+  dependencies:
+    "@console/plugin-sdk": "npm:0.0.0-fixed"
+  languageName: unknown
+  linkType: soft
+
 "@cspotcode/source-map-support@npm:^0.8.0":
   version: 0.8.1
   resolution: "@cspotcode/source-map-support@npm:0.8.1"

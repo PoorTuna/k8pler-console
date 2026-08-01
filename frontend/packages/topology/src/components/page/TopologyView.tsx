@@ -26,7 +26,6 @@ import {
   TopologyRelationshipProvider,
   isTopologyRelationshipProvider,
 } from '@console/dynamic-plugin-sdk';
-import { selectOverviewDetailsTab } from '@console/internal/actions/ui';
 import {
   getQueryArgument,
   removeQueryArgument,
@@ -74,6 +73,9 @@ import './TopologyView.scss';
 
 const FILTER_ACTIVE_CLASS = 'odc-m-filter-active';
 const MAX_NODES_LIMIT = 300;
+// The S2I "Add from git" flow this drove doesn't exist on vanilla Kubernetes. Module-scoped so
+// it's referentially stable across renders (this feeds a useMemo dependency array below).
+const NO_RESOURCE_ACCESS: string[] = [];
 
 interface StateProps {
   application?: string;
@@ -81,7 +83,6 @@ interface StateProps {
 }
 
 interface DispatchProps {
-  onSelectTab?: (name: string) => void;
   onSupportedFiltersChange?: (supportedFilterIds: string[]) => void;
   onSupportedKindsChange?: (supportedKinds: { [key: string]: number }) => void;
 }
@@ -122,8 +123,6 @@ export const ConnectedTopologyView: React.FC<ComponentProps> = ({
   const displayFilters = useDisplayFilters();
   const filters = useDeepCompareMemoize(displayFilters);
   const applicationRef = React.useRef<string>(null);
-  // The S2I "Add from git" flow this drove doesn't exist on vanilla Kubernetes.
-  const createResourceAccess: string[] = [];
   const [isQuickSearchOpen, setIsQuickSearchOpen] = React.useState<boolean>(
     typeof getQueryArgument('catalogSearch') === 'string',
   );
@@ -196,7 +195,7 @@ export const ConnectedTopologyView: React.FC<ComponentProps> = ({
 
   const graphData: GraphData = React.useMemo(
     () => ({
-      createResourceAccess,
+      createResourceAccess: NO_RESOURCE_ACCESS,
       namespace,
       eventSourceEnabled,
       createConnectorExtensions:
@@ -211,7 +210,6 @@ export const ConnectedTopologyView: React.FC<ComponentProps> = ({
     [
       createConnectors,
       createConnectorsResolved,
-      createResourceAccess,
       dynamicCreateConnectors,
       dynamicCreateConnectorsResolved,
       eventSourceEnabled,
@@ -439,7 +437,6 @@ const TopologyStateToProps = (state: RootState): StateProps => {
 };
 
 const TopologyDispatchToProps = (dispatch): DispatchProps => ({
-  onSelectTab: (name) => dispatch(selectOverviewDetailsTab(name)),
   onSupportedFiltersChange: (supportedFilterIds: string[]) => {
     dispatch(setSupportedTopologyFilters(supportedFilterIds));
   },

@@ -1,27 +1,22 @@
 import * as React from 'react';
+import { Breadcrumb, BreadcrumbItem } from '@patternfly/react-core';
+import { Dropdown, DropdownItem, DropdownToggle } from '@patternfly/react-core/deprecated';
 import { Helmet } from 'react-helmet';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom-v5-compat';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  Dropdown,
-  DropdownItem,
-  DropdownToggle,
-} from '@patternfly/react-core';
-
 import { ResourceLink, Timestamp } from '@console/dynamic-plugin-sdk/src/lib-core';
-import { StatusBox } from '@console/internal/components/utils/status-box';
 import { SectionHeading } from '@console/internal/components/utils/headings';
-
-import { getHelmRelease, getHelmReleaseHistory } from './helm-api';
+import { StatusBox } from '@console/internal/components/utils/status-box';
 import { openRollbackModal, openUninstallModal } from './helm-actions';
+import { getHelmRelease, getHelmReleaseHistory } from './helm-api';
 import { HelmRelease } from './helm-types';
 import { HelmReleaseStatus } from './HelmReleaseStatus';
 import { parseHelmManifest } from './parseHelmManifest';
 
 const Tab: React.FC<{ active: boolean; children: React.ReactNode }> = ({ active, children }) => (
-  <li className={`co-m-horizontal-nav__menu-item${active ? ' co-m-horizontal-nav-item--active' : ''}`}>
+  <li
+    className={`co-m-horizontal-nav__menu-item${active ? ' co-m-horizontal-nav-item--active' : ''}`}
+  >
     {children}
   </li>
 );
@@ -37,7 +32,11 @@ const ActionsDropdown: React.FC<{ release: HelmRelease; onUninstalled: () => voi
     <Dropdown
       isOpen={isOpen}
       onSelect={() => setOpen(false)}
-      toggle={<DropdownToggle onToggle={setOpen}>{t('public~Actions')}</DropdownToggle>}
+      toggle={
+        <DropdownToggle onToggle={(_event, next) => setOpen(next)}>
+          {t('public~Actions')}
+        </DropdownToggle>
+      }
       isPlain
       position="right"
       dropdownItems={[
@@ -100,7 +99,10 @@ const ResourcesTab: React.FC<{ release: HelmRelease }> = ({ release }) => {
       ) : (
         <ul className="list-group">
           {resources.map((resource) => (
-            <li className="list-group-item" key={`${resource.kind}/${resource.namespace ?? ''}/${resource.name}`}>
+            <li
+              className="list-group-item"
+              key={`${resource.kind}/${resource.namespace ?? ''}/${resource.name}`}
+            >
               <ResourceLink
                 kind={resource.kind}
                 name={resource.name}
@@ -221,10 +223,7 @@ export const HelmReleaseDetailsPage: React.FC = () => {
           </div>
           {release && (
             <div className="co-actions">
-              <ActionsDropdown
-                release={release}
-                onUninstalled={() => navigate('/helm-releases')}
-              />
+              <ActionsDropdown release={release} onUninstalled={() => navigate('/helm-releases')} />
             </div>
           )}
         </h1>

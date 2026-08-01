@@ -13,8 +13,6 @@ import {
 import { Node, observer } from '@patternfly/react-topology';
 import * as classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { connect } from 'react-redux';
-import { selectOverviewDetailsTab } from '@console/internal/actions/ui';
 import { modelFor } from '@console/internal/module/k8s';
 import {
   getSeverityAlertType,
@@ -33,10 +31,6 @@ import {
   TypedResourceBadgeCell,
 } from './cells';
 
-type DispatchProps = {
-  onSelectTab?: (name: string) => void;
-};
-
 type TopologyListViewNodeProps = {
   item: Node;
   selectedIds: string[];
@@ -52,11 +46,10 @@ type TopologyListViewNodeProps = {
   noPods?: boolean;
 };
 
-const TopologyListViewNode: React.FC<TopologyListViewNodeProps & DispatchProps> = ({
+const TopologyListViewNode: React.FC<TopologyListViewNodeProps> = ({
   item,
   selectedIds,
   onSelect,
-  onSelectTab,
   badgeCell,
   labelCell,
   alertsCell,
@@ -80,7 +73,6 @@ const TopologyListViewNode: React.FC<TopologyListViewNodeProps & DispatchProps> 
   if (alerts?.length > 0) {
     const onAlertClick = () => {
       onSelect([item.getId()]);
-      onSelectTab('Observe');
     };
     const severityAlertType = getSeverityAlertType(alerts);
     alertIndicator = shouldHideMonitoringAlertDecorator(severityAlertType) ? null : (
@@ -166,11 +158,4 @@ const TopologyListViewNode: React.FC<TopologyListViewNodeProps & DispatchProps> 
   );
 };
 
-const TopologyListViewNodeDispatchToProps = (dispatch): DispatchProps => ({
-  onSelectTab: (name) => dispatch(selectOverviewDetailsTab(name)),
-});
-
-export default connect<{}, DispatchProps, TopologyListViewNodeProps>(
-  null,
-  TopologyListViewNodeDispatchToProps,
-)(observer(TopologyListViewNode));
+export default observer(TopologyListViewNode);
