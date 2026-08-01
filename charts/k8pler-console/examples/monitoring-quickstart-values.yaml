@@ -1,0 +1,52 @@
+# Bundled kube-prometheus-stack, sized for a single-node/homelab cluster.
+# Populates the Nodes list's CPU/Memory/Filesystem/Pods columns and the
+# Utilization dashboards. Combine with your real auth values (this file only
+# sets the monitoring.* knobs) -- e.g.:
+#
+#   helm dependency update charts/k8pler-console
+#   helm install k8pler-console ./charts/k8pler-console \
+#     -f charts/k8pler-console/examples/dex-quickstart-values.yaml \
+#     -f charts/k8pler-console/examples/monitoring-quickstart-values.yaml \
+#     -n k8pler-console --create-namespace
+#
+# See the chart README's "Monitoring" section for what monitoring.type=bundled
+# does and doesn't cover (tenancy enforcement, the k3s scheduler-metrics
+# caveat, the recording-rule compat shim).
+
+monitoring:
+  type: bundled
+  bundledEnabled: true
+
+# kube-prometheus-stack subchart values -- trimmed for a single node. Remove
+# these overrides (or raise them) for anything bigger than a homelab box.
+kube-prometheus-stack:
+  grafana:
+    enabled: true
+    resources:
+      requests:
+        cpu: 50m
+        memory: 128Mi
+  prometheus:
+    prometheusSpec:
+      retention: 3d
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 768Mi
+  alertmanager:
+    alertmanagerSpec:
+      resources:
+        requests:
+          cpu: 25m
+          memory: 64Mi
+  prometheusOperator:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 64Mi
+  nodeExporter:
+    enabled: true
+  kubeStateMetrics:
+    enabled: true

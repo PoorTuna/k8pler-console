@@ -62,6 +62,46 @@ Validation: TLS secret must be named when tls.enabled.
 {{- end }}
 
 {{/*
+Validation: monitoring.type must be a supported value.
+*/}}
+{{- define "k8pler-console.validateMonitoringType" -}}
+{{- $allowed := list "disabled" "bundled" "external" }}
+{{- if not (has .Values.monitoring.type $allowed) }}
+  {{- fail (printf "monitoring.type must be one of %v, got: %s" $allowed .Values.monitoring.type) }}
+{{- end }}
+{{- end }}
+
+{{/*
+Validation: monitoring.type=bundled and monitoring.bundledEnabled must move
+together -- bundledEnabled is what actually gates the kube-prometheus-stack
+Helm dependency (Chart.yaml `condition` can only reference a plain boolean),
+so a mismatch here would silently deploy (or skip) the stack while every
+other template disagrees about whether monitoring is "bundled".
+*/}}
+{{- define "k8pler-console.validateMonitoringBundled" -}}
+{{- if and (eq .Values.monitoring.type "bundled") (not .Values.monitoring.bundledEnabled) }}
+  {{- fail "monitoring.type=bundled also requires monitoring.bundledEnabled=true (gates the kube-prometheus-stack dependency itself)" }}
+{{- end }}
+{{- if and .Values.monitoring.bundledEnabled (not (eq .Values.monitoring.type "bundled")) }}
+  {{- fail "monitoring.bundledEnabled=true requires monitoring.type=bundled" }}
+{{- end }}
+{{- if and (eq .Values.monitoring.type "bundled") (or .Values.monitoring.external.prometheusHost .Values.monitoring.external.alertmanagerHost) }}
+  {{- fail "monitoring.type=bundled ignores monitoring.external.* -- unset those, or switch to monitoring.type=external" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Validation: monitoring.type=external needs at least the Prometheus host.
+*/}}
+{{- define "k8pler-console.validateMonitoringExternal" -}}
+{{- if eq .Values.monitoring.type "external" }}
+  {{- if not .Values.monitoring.external.prometheusHost }}
+    {{- fail "monitoring.type=external requires monitoring.external.prometheusHost" }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
 Run all validations. Include this in every resource template.
 */}}
 {{- define "k8pler-console.validate" -}}
@@ -70,4 +110,7 @@ Run all validations. Include this in every resource template.
 {{- include "k8pler-console.validateAuthDisabled" . }}
 {{- include "k8pler-console.validateDexAutoWiring" . }}
 {{- include "k8pler-console.validateTls" . }}
+{{- include "k8pler-console.validateMonitoringType" . }}
+{{- include "k8pler-console.validateMonitoringBundled" . }}
+{{- include "k8pler-console.validateMonitoringExternal" . }}
 {{- end }}

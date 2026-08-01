@@ -1,0 +1,28 @@
+{{- if ne .Values.monitoring.type "disabled" -}}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "k8pler-console.metricsProxy.fullname" . }}
+  labels:
+    {{- include "k8pler-console.metricsProxy.labels" . | nindent 4 }}
+---
+# kube-rbac-proxy needs to create TokenReviews (authenticate the caller's
+# bearer token) and SubjectAccessReviews (check the static "get namespaces"
+# authorization below) against the API server. system:auth-delegator is the
+# standard ClusterRole for exactly this -- the console's own ServiceAccount
+# uses the same one, see values.yaml's serviceAccount.bindAuthDelegator.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "k8pler-console.metricsProxy.fullname" . }}-auth-delegator
+  labels:
+    {{- include "k8pler-console.metricsProxy.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "k8pler-console.metricsProxy.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

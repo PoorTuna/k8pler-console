@@ -22,3 +22,11 @@ maintainers:
     url: https://github.com/PoorTuna
 annotations:
   artifacthub.io/license: Apache-2.0
+dependencies:
+  - name: kube-prometheus-stack
+    version: "88.0.1"
+    repository: https://prometheus-community.github.io/helm-charts
+    # Helm dependency `condition` can only reference a plain boolean value --
+    # keep monitoring.bundledEnabled in sync with monitoring.type=bundled
+    # (see templates/_validations.tpl, which fails loudly if they drift).
+    condition: monitoring.bundledEnabled

@@ -118,6 +118,17 @@ func main() {
 	fPrometheusPublicURL := fs.String("prometheus-public-url", "", "Public URL of the cluster's Prometheus server.")
 	fThanosPublicURL := fs.String("thanos-public-url", "", "Public URL of the cluster's Thanos server.")
 
+	// Non-OpenShift in-cluster monitoring wiring. Empty by default (monitoring
+	// proxy stays disabled unless one of these is set), independent of
+	// --service-ca-file, and with a configurable scheme since a vanilla
+	// Prometheus/Alertmanager typically isn't fronted by a service-serving
+	// TLS certificate the way OpenShift's are.
+	fK8sModeInClusterPrometheusHost := fs.String("k8s-mode-in-cluster-prometheus-host", "", "Location of an in-cluster Prometheus/Thanos-compatible query API (host:port) for global (non-tenant) queries. Overrides the OpenShift thanos-querier default.")
+	fK8sModeInClusterPrometheusTenancyHost := fs.String("k8s-mode-in-cluster-prometheus-tenancy-host", "", "Location of an in-cluster, namespace-scoped Prometheus/Thanos-compatible query API (host:port), e.g. a kube-rbac-proxy/prom-label-proxy pair fronting Prometheus. Used for both the tenancy and tenancy-rules query paths.")
+	fK8sModeInClusterPrometheusScheme := fs.String("k8s-mode-in-cluster-prometheus-scheme", "http", "Scheme (http|https) for --k8s-mode-in-cluster-prometheus-host and --k8s-mode-in-cluster-prometheus-tenancy-host.")
+	fK8sModeInClusterAlertmanagerHost := fs.String("k8s-mode-in-cluster-alertmanager-host", "", "Location of an in-cluster Alertmanager API (host:port). Overrides the OpenShift alertmanager-main default. Used for all three Alertmanager proxy paths (global, tenancy, user-workload).")
+	fK8sModeInClusterAlertmanagerScheme := fs.String("k8s-mode-in-cluster-alertmanager-scheme", "http", "Scheme (http|https) for --k8s-mode-in-cluster-alertmanager-host.")
+
 	consolePluginsFlags := serverconfig.MultiKeyValue{}
 	fs.Var(&consolePluginsFlags, "plugins", "List of plugin entries that are enabled for the console. Each entry consist of plugin-name as a key and plugin-endpoint as a value.")
 	fPluginProxy := fs.String("plugin-proxy", "", "Defines various service types to which will console proxy plugins requests. (JSON as string)")
@@ -343,6 +354,7 @@ func main() {
 		}
 
 		// If running in an OpenShift cluster, set up a proxy to the prometheus-k8s service running in the openshift-monitoring namespace.
+		var serviceProxyTLSConfig *tls.Config
 		if *fServiceCAFile != "" {
 			serviceCertPEM, err := ioutil.ReadFile(*fServiceCAFile)
 			if err != nil {
@@ -352,7 +364,7 @@ func main() {
 			if !serviceProxyRootCAs.AppendCertsFromPEM(serviceCertPEM) {
 				klog.Fatal("no CA found for Kubernetes services")
 			}
-			serviceProxyTLSConfig := oscrypto.SecureTLSConfig(&tls.Config{
+			serviceProxyTLSConfig = oscrypto.SecureTLSConfig(&tls.Config{
 				RootCAs: serviceProxyRootCAs,
 			})
 
@@ -362,6 +374,50 @@ func main() {
 				},
 			}
 
+			srv.TerminalProxyTLSConfig = serviceProxyTLSConfig
+			srv.PluginsProxyTLSConfig = serviceProxyTLSConfig
+
+			srv.GitOpsProxyConfig = &proxy.Config{
+				TLSClientConfig: serviceProxyTLSConfig,
+				HeaderBlacklist: srv.ProxyHeaderDenyList,
+				Endpoint:        &url.URL{Scheme: "https", Host: openshiftGitOpsHost},
+			}
+		}
+
+		// Monitoring proxy wiring. Two independent sources: OpenShift's
+		// thanos-querier/alertmanager-main defaults (require --service-ca-file,
+		// since they're fronted by the OpenShift service-serving CA), or
+		// explicit --k8s-mode-in-cluster-prometheus-host / --k8s-mode-in-cluster-alertmanager-host
+		// overrides for any other cluster (e.g. a vanilla kube-prometheus-stack
+		// install), which use their own scheme/TLS trust and don't need
+		// --service-ca-file at all. The override flags take precedence when set.
+		genericMonitoringTLSConfig := oscrypto.SecureTLSConfig(&tls.Config{})
+
+		switch {
+		case *fK8sModeInClusterPrometheusHost != "":
+			globalHost := *fK8sModeInClusterPrometheusHost
+			tenancyHost := globalHost
+			if *fK8sModeInClusterPrometheusTenancyHost != "" {
+				tenancyHost = *fK8sModeInClusterPrometheusTenancyHost
+			}
+			scheme := *fK8sModeInClusterPrometheusScheme
+
+			srv.ThanosProxyConfig = &proxy.Config{
+				TLSClientConfig: genericMonitoringTLSConfig,
+				HeaderBlacklist: srv.ProxyHeaderDenyList,
+				Endpoint:        &url.URL{Scheme: scheme, Host: globalHost, Path: "/api"},
+			}
+			srv.ThanosTenancyProxyConfig = &proxy.Config{
+				TLSClientConfig: genericMonitoringTLSConfig,
+				HeaderBlacklist: srv.ProxyHeaderDenyList,
+				Endpoint:        &url.URL{Scheme: scheme, Host: tenancyHost, Path: "/api"},
+			}
+			srv.ThanosTenancyProxyForRulesConfig = &proxy.Config{
+				TLSClientConfig: genericMonitoringTLSConfig,
+				HeaderBlacklist: srv.ProxyHeaderDenyList,
+				Endpoint:        &url.URL{Scheme: scheme, Host: tenancyHost, Path: "/api"},
+			}
+		case *fServiceCAFile != "":
 			srv.ThanosProxyConfig = &proxy.Config{
 				TLSClientConfig: serviceProxyTLSConfig,
 				HeaderBlacklist: srv.ProxyHeaderDenyList,
@@ -377,7 +433,27 @@ func main() {
 				HeaderBlacklist: srv.ProxyHeaderDenyList,
 				Endpoint:        &url.URL{Scheme: "https", Host: openshiftThanosTenancyForRulesHost, Path: "/api"},
 			}
+		}
 
+		switch {
+		case *fK8sModeInClusterAlertmanagerHost != "":
+			scheme := *fK8sModeInClusterAlertmanagerScheme
+			srv.AlertManagerProxyConfig = &proxy.Config{
+				TLSClientConfig: genericMonitoringTLSConfig,
+				HeaderBlacklist: srv.ProxyHeaderDenyList,
+				Endpoint:        &url.URL{Scheme: scheme, Host: *fK8sModeInClusterAlertmanagerHost, Path: "/api"},
+			}
+			srv.AlertManagerUserWorkloadProxyConfig = &proxy.Config{
+				TLSClientConfig: genericMonitoringTLSConfig,
+				HeaderBlacklist: srv.ProxyHeaderDenyList,
+				Endpoint:        &url.URL{Scheme: scheme, Host: *fK8sModeInClusterAlertmanagerHost, Path: "/api"},
+			}
+			srv.AlertManagerTenancyProxyConfig = &proxy.Config{
+				TLSClientConfig: genericMonitoringTLSConfig,
+				HeaderBlacklist: srv.ProxyHeaderDenyList,
+				Endpoint:        &url.URL{Scheme: scheme, Host: *fK8sModeInClusterAlertmanagerHost, Path: "/api"},
+			}
+		case *fServiceCAFile != "":
 			srv.AlertManagerProxyConfig = &proxy.Config{
 				TLSClientConfig: serviceProxyTLSConfig,
 				HeaderBlacklist: srv.ProxyHeaderDenyList,
@@ -392,14 +468,6 @@ func main() {
 				TLSClientConfig: serviceProxyTLSConfig,
 				HeaderBlacklist: srv.ProxyHeaderDenyList,
 				Endpoint:        &url.URL{Scheme: "https", Host: *fAlertmanagerTenancyHost, Path: "/api"},
-			}
-			srv.TerminalProxyTLSConfig = serviceProxyTLSConfig
-			srv.PluginsProxyTLSConfig = serviceProxyTLSConfig
-
-			srv.GitOpsProxyConfig = &proxy.Config{
-				TLSClientConfig: serviceProxyTLSConfig,
-				HeaderBlacklist: srv.ProxyHeaderDenyList,
-				Endpoint:        &url.URL{Scheme: "https", Host: openshiftGitOpsHost},
 			}
 		}
 

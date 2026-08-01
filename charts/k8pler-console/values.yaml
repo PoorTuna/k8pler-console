@@ -71,9 +71,31 @@ auth:
     # -- DEV ONLY. Static bearer token used for every request when auth.type=disabled.
     staticBearerToken: ""
 
-# -- Optional upstream service public URLs for the Observe/monitoring dashboards.
-# -- Leave unset to render those pages empty rather than erroring.
+# -- Metrics wiring for the Nodes list, Utilization dashboards, and Observe
+# -- pages. type: disabled | bundled | external
 monitoring:
+  type: disabled
+
+  # -- Required (and only meaningful) when monitoring.type=bundled: gates the
+  # -- kube-prometheus-stack dependency below. Helm dependency `condition`
+  # -- can only reference a plain boolean value, not monitoring.type directly
+  # -- -- keep this in sync with monitoring.type=bundled, or helm template
+  # -- will fail loudly (see templates/_validations.tpl).
+  bundledEnabled: false
+
+  # -- Used when monitoring.type=external: point at a Prometheus/Alertmanager
+  # -- you already run (e.g. one already scraping other workloads on this
+  # -- cluster) instead of bundling kube-prometheus-stack.
+  external:
+    # -- host:port, e.g. prometheus-operated.monitoring.svc:9090
+    prometheusHost: ""
+    prometheusScheme: http
+    # -- host:port, e.g. alertmanager-operated.monitoring.svc:9093
+    alertmanagerHost: ""
+    alertmanagerScheme: http
+
+  # -- Optional upstream service public URLs for "open in Prometheus/Grafana"
+  # -- links. Independent of monitoring.type -- leave unset to hide the links.
   prometheusPublicUrl: ""
   grafanaPublicUrl: ""
   thanosPublicUrl: ""
@@ -182,3 +204,73 @@ dex:
     tls:
       enabled: false
       secretName: ""
+
+# -- Tenancy-enforcement proxy fronting the effective Prometheus (bundled or
+# -- external), deployed whenever monitoring.type != disabled. Replicates
+# -- OpenShift's thanos-querier sidecar pair: kube-rbac-proxy authenticates
+# -- the request and checks (via SubjectAccessReview) that the caller can
+# -- `get` the `namespaces` resource named in the request's `namespace=`
+# -- query param, then prom-label-proxy injects that namespace as an actual
+# -- PromQL label matcher before forwarding to Prometheus. Only the
+# -- Prometheus tenancy path goes through this proxy -- Alertmanager's
+# -- tenancy path is a plain host mapping (see monitoring.external.alertmanagerHost
+# -- and the README's "Bundled monitoring" section for why).
+metricsProxy:
+  image:
+    kubeRbacProxy:
+      repository: quay.io/brancz/kube-rbac-proxy
+      tag: v0.18.1
+      pullPolicy: IfNotPresent
+    promLabelProxy:
+      repository: quay.io/prometheuscommunity/prom-label-proxy
+      tag: v0.11.1
+      pullPolicy: IfNotPresent
+  resources: {}
+
+# -- Bundled kube-prometheus-stack (Prometheus + Alertmanager + node-exporter
+# -- + kube-state-metrics + Grafana), deployed as a real Helm dependency when
+# -- monitoring.type=bundled (also requires monitoring.bundledEnabled=true --
+# -- see the comment on that field). Values below pass straight through to
+# -- that chart -- see
+# -- https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+# -- for the full reference. Trimmed down here for a single-node cluster;
+# -- override anything for a larger deployment.
+kube-prometheus-stack:
+  grafana:
+    enabled: true
+  prometheus:
+    prometheusSpec:
+      retention: 7d
+      resources:
+        requests:
+          cpu: 100m
+          memory: 512Mi
+        limits:
+          memory: 1Gi
+  alertmanager:
+    alertmanagerSpec:
+      resources:
+        requests:
+          cpu: 25m
+          memory: 64Mi
+  # kube-scheduler's /metrics/resources endpoint (kube_pod_resource_request/
+  # kube_pod_resource_limit, used by the Nodes list's request/limit columns)
+  # isn't reliably scrapeable on k3s's embedded scheduler -- leaving this
+  # ServiceMonitor on is harmless (just won't find targets) but disable it if
+  # it's noisy in your setup.
+  kubeScheduler:
+    enabled: true
+  # The console's Cluster/Project Utilization dashboards join node-exporter
+  # metrics against kube_node_role `on(instance)`, after rewriting
+  # kube_node_role's own `instance` label to the k8s Node's *name* (not
+  # node-exporter's default ip:port scrape-target instance label). Without
+  # this relabeling, that join always returns empty -- node-exporter's raw
+  # `instance` label never matches. This is the same relabeling OpenShift's
+  # own node-exporter is configured with, replicated here for a vanilla
+  # kube-prometheus-stack install.
+  prometheus-node-exporter:
+    prometheus:
+      monitor:
+        relabelings:
+          - sourceLabels: [__meta_kubernetes_pod_node_name]
+            targetLabel: instance

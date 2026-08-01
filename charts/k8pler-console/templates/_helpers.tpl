@@ -110,3 +110,70 @@ Dex issuer URL: explicit dex.issuerUrl, else derived from its ingress host.
 {{- printf "http://%s:%v" (include "k8pler-console.dex.fullname" .) .Values.dex.service.port }}
 {{- end }}
 {{- end }}
+
+{{/*
+Metrics tenancy-enforcement proxy (kube-rbac-proxy + prom-label-proxy)
+fullname / labels (bundled sub-component of this chart)
+*/}}
+{{- define "k8pler-console.metricsProxy.fullname" -}}
+{{- printf "%s-metrics-proxy" (include "k8pler-console.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{- define "k8pler-console.metricsProxy.labels" -}}
+{{ include "k8pler-console.labels" . }}
+app.kubernetes.io/component: metrics-proxy
+{{- end }}
+
+{{- define "k8pler-console.metricsProxy.selectorLabels" -}}
+{{ include "k8pler-console.selectorLabels" . }}
+app.kubernetes.io/component: metrics-proxy
+{{- end }}
+
+{{/*
+Effective Prometheus/Alertmanager host:port for the *global* (non-tenant)
+query path -- bundled kube-prometheus-stack's well-known operator-managed
+"operated" service names (fixed by the Prometheus Operator itself,
+independent of Helm release name), or monitoring.external.*Host.
+Empty when monitoring.type=disabled.
+*/}}
+{{- define "k8pler-console.monitoring.prometheusHost" -}}
+{{- if eq .Values.monitoring.type "bundled" }}
+{{- printf "prometheus-operated.%s.svc:9090" .Release.Namespace }}
+{{- else if eq .Values.monitoring.type "external" }}
+{{- .Values.monitoring.external.prometheusHost }}
+{{- end }}
+{{- end }}
+
+{{- define "k8pler-console.monitoring.prometheusScheme" -}}
+{{- if eq .Values.monitoring.type "bundled" }}
+{{- print "http" }}
+{{- else }}
+{{- default "http" .Values.monitoring.external.prometheusScheme }}
+{{- end }}
+{{- end }}
+
+{{- define "k8pler-console.monitoring.alertmanagerHost" -}}
+{{- if eq .Values.monitoring.type "bundled" }}
+{{- printf "alertmanager-operated.%s.svc:9093" .Release.Namespace }}
+{{- else if eq .Values.monitoring.type "external" }}
+{{- .Values.monitoring.external.alertmanagerHost }}
+{{- end }}
+{{- end }}
+
+{{- define "k8pler-console.monitoring.alertmanagerScheme" -}}
+{{- if eq .Values.monitoring.type "bundled" }}
+{{- print "http" }}
+{{- else }}
+{{- default "http" .Values.monitoring.external.alertmanagerScheme }}
+{{- end }}
+{{- end }}
+
+{{/*
+Tenancy (namespace-scoped) Prometheus query host: the metrics-proxy
+Service, in-cluster, plain HTTP (kube-rbac-proxy handles authn/authz over
+the forwarded bearer token; the proxy is ClusterIP-only, never
+internet-facing, so it doesn't need its own TLS listener).
+*/}}
+{{- define "k8pler-console.monitoring.prometheusTenancyHost" -}}
+{{- printf "%s.%s.svc:%v" (include "k8pler-console.metricsProxy.fullname" .) .Release.Namespace 8080 }}
+{{- end }}

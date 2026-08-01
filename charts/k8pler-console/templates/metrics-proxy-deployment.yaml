@@ -1,0 +1,73 @@
+{{- if ne .Values.monitoring.type "disabled" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k8pler-console.metricsProxy.fullname" . }}
+  labels:
+    {{- include "k8pler-console.metricsProxy.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "k8pler-console.metricsProxy.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/metrics-proxy-config.yaml") . | sha256sum }}
+      labels:
+        {{- include "k8pler-console.metricsProxy.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "k8pler-console.metricsProxy.fullname" . }}
+      containers:
+        - name: kube-rbac-proxy
+          image: "{{ .Values.metricsProxy.image.kubeRbacProxy.repository }}:{{ .Values.metricsProxy.image.kubeRbacProxy.tag }}"
+          imagePullPolicy: {{ .Values.metricsProxy.image.kubeRbacProxy.pullPolicy }}
+          args:
+            - --insecure-listen-address=0.0.0.0:8080
+            - --upstream=http://127.0.0.1:8081/
+            - --config-file=/etc/kube-rbac-proxy/config.yaml
+            - --logtostderr=true
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/kube-rbac-proxy
+              readOnly: true
+          {{- with .Values.metricsProxy.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        - name: prom-label-proxy
+          image: "{{ .Values.metricsProxy.image.promLabelProxy.repository }}:{{ .Values.metricsProxy.image.promLabelProxy.tag }}"
+          imagePullPolicy: {{ .Values.metricsProxy.image.promLabelProxy.pullPolicy }}
+          args:
+            - --insecure-listen-address=127.0.0.1:8081
+            - --upstream={{ include "k8pler-console.monitoring.prometheusScheme" . }}://{{ include "k8pler-console.monitoring.prometheusHost" . }}/
+            - --label=namespace
+            - --query-param=namespace
+          {{- with .Values.metricsProxy.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "k8pler-console.metricsProxy.fullname" . }}-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "k8pler-console.metricsProxy.fullname" . }}
+  labels:
+    {{- include "k8pler-console.metricsProxy.labels" . | nindent 4 }}
+spec:
+  selector:
+    {{- include "k8pler-console.metricsProxy.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+{{- end }}

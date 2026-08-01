@@ -209,7 +209,7 @@ func (s *Server) prometheusProxyEnabled() bool {
 }
 
 func (s *Server) alertManagerProxyEnabled() bool {
-	return s.AlertManagerProxyConfig != nil && s.AlertManagerTenancyProxyConfig != nil
+	return s.AlertManagerProxyConfig != nil && s.AlertManagerTenancyProxyConfig != nil && s.AlertManagerUserWorkloadProxyConfig != nil
 }
 
 func (s *Server) gitopsProxyEnabled() bool {

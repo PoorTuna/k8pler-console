@@ -71,10 +71,22 @@
     "monitoring": {
       "type": "object",
       "properties": {
+        "type": { "type": "string", "enum": ["disabled", "bundled", "external"] },
+        "bundledEnabled": { "type": "boolean", "default": false },
+        "external": {
+          "type": "object",
+          "properties": {
+            "prometheusHost": { "type": "string" },
+            "prometheusScheme": { "type": "string", "enum": ["http", "https"] },
+            "alertmanagerHost": { "type": "string" },
+            "alertmanagerScheme": { "type": "string", "enum": ["http", "https"] }
+          }
+        },
         "prometheusPublicUrl": { "type": "string" },
         "grafanaPublicUrl": { "type": "string" },
         "thanosPublicUrl": { "type": "string" }
-      }
+      },
+      "required": ["type"]
     },
     "serviceAccount": {
       "type": "object",
@@ -169,7 +181,35 @@
           }
         }
       }
-    }
+    },
+    "metricsProxy": {
+      "type": "object",
+      "properties": {
+        "image": {
+          "type": "object",
+          "properties": {
+            "kubeRbacProxy": {
+              "type": "object",
+              "properties": {
+                "repository": { "type": "string" },
+                "tag": { "type": "string" },
+                "pullPolicy": { "type": "string", "enum": ["Always", "IfNotPresent", "Never"] }
+              }
+            },
+            "promLabelProxy": {
+              "type": "object",
+              "properties": {
+                "repository": { "type": "string" },
+                "tag": { "type": "string" },
+                "pullPolicy": { "type": "string", "enum": ["Always", "IfNotPresent", "Never"] }
+              }
+            }
+          }
+        },
+        "resources": { "type": "object" }
+      }
+    },
+    "kube-prometheus-stack": { "type": "object" }
   },
   "required": ["console", "auth"]
 }

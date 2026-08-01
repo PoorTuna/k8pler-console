@@ -16,6 +16,9 @@ Kubernetes clusters — with OIDC authentication.
 | Custom logo `ConfigMap` (bundled k8pler mark by default) | `console.customLogo.enabled` | `true` |
 | Bundled Dex (`Deployment`, `Service`, config `Secret`, RBAC) | `dex.enabled` | `false` |
 | Dex `Ingress` | `dex.ingress.enabled` | `false` |
+| Bundled `kube-prometheus-stack` (Prometheus, Alertmanager, Grafana, node-exporter, kube-state-metrics, CRDs) | `monitoring.type=bundled` (+ `monitoring.bundledEnabled=true`) | `false` |
+| Metrics tenancy proxy (`Deployment`, `Service`, RBAC — kube-rbac-proxy + prom-label-proxy) | `monitoring.type != disabled` | `false` |
+| Compat recording rules `PrometheusRule` | `monitoring.type=bundled` | `false` |
 
 ## Prerequisites
 
@@ -54,6 +57,7 @@ helm install k8pler-console ./charts/k8pler-console \
 | [`minimal-values.yaml`](examples/minimal-values.yaml) | `auth.type=disabled`, no ingress — quickest local smoke test |
 | [`dex-quickstart-values.yaml`](examples/dex-quickstart-values.yaml) | Bundled Dex with one static demo user, ingress for both |
 | [`production-values.yaml`](examples/production-values.yaml) | External OIDC, TLS ingress, resource limits, anti-affinity |
+| [`monitoring-quickstart-values.yaml`](examples/monitoring-quickstart-values.yaml) | Bundled kube-prometheus-stack, sized for a single-node cluster |
 
 ## Helm tests
 
@@ -102,6 +106,50 @@ provider) yourself and point `auth.oidc.issuerUrl` at it instead of setting
 | `dex.staticPasswords` | Dev-only bcrypt password list. Use `dex.connectors` for anything real | `[]` |
 | `dex.connectors` | Raw [Dex connector](https://dexidp.io/docs/connectors/) config (LDAP, GitHub, SAML, upstream OIDC...) | `[]` |
 
+### Monitoring (`monitoring.*`)
+
+Wires the Nodes list's CPU/Memory/Filesystem/Pods columns, the cluster/project
+Utilization dashboards, and the Observe pages to a real Prometheus. Three
+mutually exclusive modes, `disabled` by default (those pages render an empty
+"not available" state, no crashes):
+
+| `monitoring.type` | What it does |
+|---|---|
+| `disabled` | Default. No metrics wiring; Observe/Utilization pages stay empty. |
+| `bundled` | Deploys `kube-prometheus-stack` (Prometheus, Alertmanager, Grafana, node-exporter, kube-state-metrics) as a real Helm dependency. Also requires `monitoring.bundledEnabled=true` — Helm's dependency `condition` can only read a plain boolean, so this second flag is what actually gates the subchart; `helm template`/`install` fails loudly if the two disagree. Run `helm dependency update` after enabling. |
+| `external` | Points at a Prometheus/Alertmanager you already run. Set `monitoring.external.prometheusHost` (required) / `.prometheusScheme` / `.alertmanagerHost` / `.alertmanagerScheme` — all in-cluster `host:port` form, e.g. `prometheus-operated.monitoring.svc:9090`. |
+
+**Tenancy enforcement.** Whenever `monitoring.type != disabled`, the chart
+also deploys a small proxy (`kube-rbac-proxy` + `prom-label-proxy`, the same
+pair OpenShift's `thanos-querier` uses) in front of the effective Prometheus,
+and routes the console's namespace-scoped queries through it instead of
+straight to Prometheus. For every request, it checks — via
+`SubjectAccessReview` — that the caller can `get` the `namespaces` resource
+named in the request's `namespace=` query param (the same check a `view`
+RoleBinding in that namespace already satisfies), then injects that
+namespace as a real PromQL label matcher before forwarding upstream. Without
+this, anyone who can log in would see cluster-wide metrics through the
+"per-namespace" API paths too.
+
+This enforcement covers **Prometheus only**. Alertmanager's tenancy path
+(`monitoring.external.alertmanagerHost`, or the bundled Alertmanager) is a
+plain host mapping with no equivalent proxy in front of it — Alertmanager's
+API doesn't support the same label-injection trick. Accepted gap, not a bug.
+
+**Known gap on k3s:** the Nodes list's request/limit columns come from
+`kube_pod_resource_request`/`kube_pod_resource_limit`, which need the
+kube-scheduler's `/metrics/resources` endpoint scraped. k3s's embedded
+scheduler may not expose this reliably — those two columns can stay blank
+even with `monitoring.type=bundled`, independent of everything else working.
+
+**Missing recording rules.** A few metrics the console frontend queries are
+OpenShift `cluster-monitoring-operator` additions that vanilla
+`kube-prometheus-stack` doesn't ship. When `monitoring.type=bundled`, this
+chart bundles a `PrometheusRule` re-deriving vanilla-Prometheus equivalents
+(`templates/monitoring-recording-rules.yaml`) — for `monitoring.type=external`,
+add the same `expr`s to your own Prometheus's rule files (see that template
+for the full list).
+
 ### Networking / platform
 
 | Parameter | Description | Default |
@@ -116,6 +164,6 @@ provider) yourself and point `auth.oidc.issuerUrl` at it instead of setting
 
 - No OLM/OperatorHub — dropped from this fork entirely.
 - No OpenShift `Route` — pure-Kubernetes `Ingress` only.
-- No OpenShift monitoring stack wiring (Thanos/Alertmanager). Point
-  `monitoring.prometheusPublicUrl` / `monitoring.grafanaPublicUrl` at your own
-  kube-prometheus-stack if you want the Observe dashboards populated.
+- No Thanos — `monitoring.type=bundled`/`external` point the console straight
+  at a single Prometheus/Alertmanager (see the Monitoring section above for
+  what that does and doesn't cover).

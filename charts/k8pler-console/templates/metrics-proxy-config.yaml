@@ -1,0 +1,26 @@
+{{- if ne .Values.monitoring.type "disabled" -}}
+# kube-rbac-proxy static authorization config: for every request, check
+# (via SubjectAccessReview) that the caller can `get` the `namespaces`
+# resource named by the request's `namespace=` query param. This is the
+# same "namespace" resource + verb check OpenShift's cluster-monitoring-
+# operator wires up for thanos-querier's tenancy sidecar -- whoever can
+# `get namespaces/<ns>` (e.g. via a `view` RoleBinding in that namespace)
+# can see that namespace's metrics through this proxy.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "k8pler-console.metricsProxy.fullname" . }}-config
+  labels:
+    {{- include "k8pler-console.metricsProxy.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    authorization:
+      resourceAttributes:
+        namespace: "{{ "{{ .Value }}" }}"
+        apiVersion: v1
+        resource: namespaces
+        verb: get
+      rewrites:
+        byQueryParameter:
+          name: "namespace"
+{{- end }}

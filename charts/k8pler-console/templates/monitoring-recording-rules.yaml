@@ -1,0 +1,58 @@
+{{- if eq .Values.monitoring.type "bundled" -}}
+# The console frontend queries a handful of recording rules that OpenShift's
+# cluster-monitoring-operator adds on top of Prometheus but that vanilla
+# kube-prometheus-stack doesn't ship (the kubernetes-mixin rules it *does*
+# ship -- node_namespace_pod:kube_pod_info:, namespace_workload_pod:kube_pod_owner:relabel,
+# node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate --
+# already cover the rest). Re-derived here from raw cAdvisor/node-exporter
+# metrics rather than copied from OpenShift, since we don't have CMO's label
+# pipeline. Only meaningful with the Prometheus Operator watching this CRD,
+# hence gated to monitoring.type=bundled -- for monitoring.type=external,
+# add the same `expr`s to your own Prometheus's rule files.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "k8pler-console.fullname" . }}-compat-recording-rules
+  labels:
+    {{- include "k8pler-console.labels" . | nindent 4 }}
+    # kube-prometheus-stack's Prometheus CR only watches PrometheusRule
+    # objects carrying this exact label (its default ruleSelector) --
+    # without it, Prometheus silently never loads this rule group.
+    release: {{ .Release.Name }}
+spec:
+  groups:
+    - name: k8pler-console.compat
+      rules:
+        - record: pod:container_cpu_usage:sum
+          expr: sum by (pod, namespace) (rate(container_cpu_usage_seconds_total{container!="", container!="POD", pod!=""}[5m]))
+        - record: namespace:container_cpu_usage:sum
+          expr: sum by (namespace) (rate(container_cpu_usage_seconds_total{container!="", container!="POD", pod!=""}[5m]))
+        - record: pod:container_fs_usage_bytes:sum
+          expr: sum by (pod, namespace) (container_fs_usage_bytes{container!="", container!="POD", pod!=""})
+        - record: pod_interface_network:container_network_receive_bytes:irate5m
+          expr: sum by (pod, namespace) (irate(container_network_receive_bytes_total{pod!=""}[5m]))
+        - record: pod_interface_network:container_network_transmit_bytes_total:irate5m
+          expr: sum by (pod, namespace) (irate(container_network_transmit_bytes_total{pod!=""}[5m]))
+        # Aggregated down to just (pod, namespace, uid) -- the frontend joins
+        # this via `ignoring(node,uid)`, which requires every *other* label
+        # to match exactly on both sides. kube_pod_status_ready carries the
+        # scrape target's own labels (job, instance, container...) that
+        # node_namespace_pod:kube_pod_info: doesn't have, so passing it
+        # through unaggregated silently drops every match.
+        - record: kube_running_pod_ready
+          expr: count by (pod, namespace, uid) (kube_pod_status_ready{condition="true"})
+        # Legacy node-exporter-mixin metric names (renamed in recent mixin
+        # releases; the console frontend still queries the old names).
+        - record: instance:node_cpu:rate:sum
+          expr: sum by (instance) (rate(node_cpu_seconds_total{mode!="idle", mode!="iowait", mode!="steal"}[5m]))
+        - record: instance:node_num_cpu:sum
+          expr: count by (instance) (count by (instance, cpu) (node_cpu_seconds_total))
+        - record: instance:node_network_receive_bytes_excluding_lo:rate1m
+          expr: sum by (instance) (rate(node_network_receive_bytes_total{device!="lo"}[1m]))
+        - record: instance:node_network_transmit_bytes_excluding_lo:rate1m
+          expr: sum by (instance) (rate(node_network_transmit_bytes_total{device!="lo"}[1m]))
+        - record: instance:node_network_receive_bytes:rate:sum
+          expr: sum by (instance) (rate(node_network_receive_bytes_total[3m]))
+        - record: instance:node_network_transmit_bytes:rate:sum
+          expr: sum by (instance) (rate(node_network_transmit_bytes_total[3m]))
+{{- end }}

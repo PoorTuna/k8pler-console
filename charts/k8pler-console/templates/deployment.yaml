@@ -98,6 +98,13 @@ spec:
             {{- if .Values.monitoring.thanosPublicUrl }}
             - --thanos-public-url={{ .Values.monitoring.thanosPublicUrl }}
             {{- end }}
+            {{- if ne .Values.monitoring.type "disabled" }}
+            - --k8s-mode-in-cluster-prometheus-host={{ include "k8pler-console.monitoring.prometheusHost" . }}
+            - --k8s-mode-in-cluster-prometheus-tenancy-host={{ include "k8pler-console.monitoring.prometheusTenancyHost" . }}
+            - --k8s-mode-in-cluster-prometheus-scheme={{ include "k8pler-console.monitoring.prometheusScheme" . }}
+            - --k8s-mode-in-cluster-alertmanager-host={{ include "k8pler-console.monitoring.alertmanagerHost" . }}
+            - --k8s-mode-in-cluster-alertmanager-scheme={{ include "k8pler-console.monitoring.alertmanagerScheme" . }}
+            {{- end }}
             {{- if .Values.tls.enabled }}
             - --tls-cert-file=/etc/console/tls/tls.crt
             - --tls-key-file=/etc/console/tls/tls.key
