@@ -51,6 +51,21 @@ used instead of auth.oidc.clientSecret.
 {{- end }}
 
 {{/*
+Validation: console.baseAddress can only be derived automatically for the
+port-forward quick start (service.type=ClusterIP, falls back to localhost) or
+Ingress (host is known upfront). LoadBalancer/NodePort service.type means the
+console is reachable at some external IP the chart can't know in advance --
+falling back to "http://localhost:<port>" there is always wrong (breaks OIDC
+redirects, cookie domains, absolute links) and fails silently at runtime
+instead of at install time, so catch it here.
+*/}}
+{{- define "k8pler-console.validateBaseAddress" -}}
+{{- if and (not .Values.console.baseAddress) (not .Values.ingress.enabled) (ne .Values.service.type "ClusterIP") }}
+  {{- fail (printf "service.type=%s with ingress.enabled=false needs console.baseAddress set explicitly (e.g. http://<node-ip>:%v) -- it can't be derived automatically, and the localhost fallback only makes sense for ClusterIP + kubectl port-forward" .Values.service.type .Values.service.port) }}
+{{- end }}
+{{- end }}
+
+{{/*
 Validation: TLS secret must be named when tls.enabled.
 */}}
 {{- define "k8pler-console.validateTls" -}}
@@ -109,6 +124,7 @@ Run all validations. Include this in every resource template.
 {{- include "k8pler-console.validateOidcIssuer" . }}
 {{- include "k8pler-console.validateAuthDisabled" . }}
 {{- include "k8pler-console.validateDexAutoWiring" . }}
+{{- include "k8pler-console.validateBaseAddress" . }}
 {{- include "k8pler-console.validateTls" . }}
 {{- include "k8pler-console.validateMonitoringType" . }}
 {{- include "k8pler-console.validateMonitoringBundled" . }}

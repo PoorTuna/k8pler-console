@@ -4,6 +4,13 @@
 
 replicaCount: 1
 
+console:
+  # -- Required for LoadBalancer + no ingress: the chart can't know the node's
+  # -- LAN IP in advance. Set this to the real address before installing --
+  # -- get it with `kubectl get svc` after a first install if you don't know
+  # -- it yet, then upgrade with the corrected value.
+  baseAddress: "http://REPLACE_WITH_NODE_IP:9000"
+
 image:
   repository: poortuna/k8pler-console
   tag: latest
