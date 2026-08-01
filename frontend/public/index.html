@@ -64,10 +64,26 @@
       if (theme === 'systemDefault' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         theme = 'dark';
       }
+      var darkFlavorClasses = {
+        'gruvbox-dark': 'co-theme-gruvbox-dark',
+        'kubana-dark': 'co-theme-kubana-dark',
+        matrix: 'co-theme-matrix',
+        'neon-punk': 'co-theme-neon-punk',
+      };
+      var lightFlavorClasses = {
+        orokin: 'co-theme-orokin',
+        'kubana-light': 'co-theme-kubana-light',
+      };
       if (theme === 'dark') {
         document.documentElement.classList.add('pf-v5-theme-dark', 'pf-theme-dark'); // legacy pf-theme-dark class needed for PF4 component styling
-      } else if (theme === 'orokin') {
-        document.documentElement.classList.add('co-theme-orokin');
+      } else if (darkFlavorClasses[theme]) {
+        document.documentElement.classList.add(
+          'pf-v5-theme-dark',
+          'pf-theme-dark',
+          darkFlavorClasses[theme],
+        );
+      } else if (lightFlavorClasses[theme]) {
+        document.documentElement.classList.add(lightFlavorClasses[theme]);
       }
     </script>
   </head>

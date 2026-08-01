@@ -1,0 +1,65 @@
+// Kubana Dark theme
+//
+// Ported from Cassanova's theme set (kubana-dark.css). Elastic-inspired dark
+// palette: near-black background, teal accent, hot-pink secondary. Layers on
+// top of PatternFly's stock dark theme (applied alongside .pf-v5-theme-dark).
+
+:root:where(.co-theme-kubana-dark) {
+  --co-kubana--bg: #1d1e24;
+  --co-kubana--surface: #25262c;
+  --co-kubana--surface-alt: #2a2b31;
+  --co-kubana--ink: #ececec;
+  --co-kubana--ink-muted: #9a9a9a;
+  --co-kubana--teal: #00b3a4;
+  --co-kubana--blue: #36a2ef;
+  --co-kubana--pink: #db1374;
+  --co-kubana--border: #34353c;
+  --co-kubana--border-strong: #1f2026;
+
+  --pf-v5-global--BackgroundColor--100: var(--co-kubana--surface);
+  --pf-v5-global--BackgroundColor--200: var(--co-kubana--bg);
+  --pf-v5-global--BackgroundColor--light-300: var(--co-kubana--surface-alt);
+
+  --pf-v5-global--Color--100: var(--co-kubana--ink);
+  --pf-v5-global--Color--200: var(--co-kubana--ink-muted);
+
+  --pf-v5-global--primary-color--100: var(--co-kubana--teal);
+  --pf-v5-global--active-color--100: var(--co-kubana--teal);
+
+  --pf-v5-global--link--Color: var(--co-kubana--teal);
+  --pf-v5-global--link--Color--hover: var(--co-kubana--blue);
+  --pf-v5-global--link--Color--visited: var(--co-kubana--pink);
+
+  --pf-v5-global--BorderColor--100: var(--co-kubana--border);
+  --pf-v5-global--BorderColor--200: var(--co-kubana--border);
+  --pf-v5-global--BorderColor--300: var(--co-kubana--border-strong);
+
+  --pf-v5-global--warning-color--100: #f98510;
+
+  --pf-v5-c-masthead--BackgroundColor: var(--co-kubana--bg);
+  --pf-v5-c-page__sidebar--BackgroundColor: var(--co-kubana--bg);
+  --pf-v5-c-nav__link--m-current--Color: var(--co-kubana--teal);
+  --pf-v5-c-nav__link--m-current--after--BorderColor: var(--co-kubana--teal);
+  --pf-v5-c-tabs__item--m-current__link--Color: var(--co-kubana--teal);
+  --pf-v5-c-tabs__item--m-current__link--after--BorderColor: var(--co-kubana--teal);
+
+  .pf-v5-c-masthead {
+    border-bottom: 1px solid var(--co-kubana--teal);
+  }
+
+  .pf-v5-c-table thead {
+    --pf-v5-c-table--BorderColor: var(--co-kubana--teal);
+
+    tr {
+      border-bottom: 2px solid var(--co-kubana--teal);
+    }
+  }
+
+  .pf-v5-c-table tbody tr:hover {
+    --pf-v5-c-table--BackgroundColor: rgba(0, 179, 164, 0.12);
+  }
+
+  .pf-v5-c-card {
+    border-top: 2px solid var(--co-kubana--teal);
+  }
+}

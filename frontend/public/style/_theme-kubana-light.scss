@@ -1,0 +1,70 @@
+// Kubana Light theme
+//
+// Ported from Cassanova's theme set (kubana-light.css). Elastic-inspired light
+// palette: soft grey-blue background, white cards, teal accent. Layered on
+// PatternFly's light base (no dark class), matching how Orokin is applied.
+//
+// Raw teal (#00B3A4) is ~2.9:1 on white -- short of AA text contrast -- so, as
+// with Orokin's gold, it is split into a darker "ink" variant for text/links
+// and kept bright only as ornament (rules, chip tints, chrome accents).
+
+:root:where(.co-theme-kubana-light) {
+  --co-kubana-light--canvas: #f5f7fa;
+  --co-kubana-light--surface: #ffffff;
+  --co-kubana-light--ink: #1a1d1f;
+  --co-kubana-light--ink-muted: #5f6b7c;
+  --co-kubana-light--teal: #00b3a4; // ornament only on light surfaces
+  --co-kubana-light--teal-ink: #00695c; // 5.4:1 on white -- text/links
+  --co-kubana-light--teal-ink-hover: #004a41;
+  --co-kubana-light--border: #e1e5ea;
+  --co-kubana-light--border-strong: #c7cdd6;
+
+  --pf-v5-global--BackgroundColor--100: var(--co-kubana-light--surface);
+  --pf-v5-global--BackgroundColor--200: var(--co-kubana-light--canvas);
+  --pf-v5-global--BackgroundColor--light-300: var(--co-kubana-light--canvas);
+
+  --pf-v5-global--Color--100: var(--co-kubana-light--ink);
+  --pf-v5-global--Color--200: var(--co-kubana-light--ink-muted);
+
+  --pf-v5-global--primary-color--100: var(--co-kubana-light--teal-ink);
+  --pf-v5-global--active-color--100: var(--co-kubana-light--teal-ink);
+
+  --pf-v5-global--link--Color: var(--co-kubana-light--teal-ink);
+  --pf-v5-global--link--Color--hover: var(--co-kubana-light--teal-ink-hover);
+  --pf-v5-global--link--Color--visited: var(--co-kubana-light--teal-ink-hover);
+
+  --pf-v5-global--BorderColor--100: var(--co-kubana-light--border);
+  --pf-v5-global--BorderColor--200: var(--co-kubana-light--border);
+  --pf-v5-global--BorderColor--300: var(--co-kubana-light--border-strong);
+
+  --pf-v5-global--warning-color--100: #f98510;
+
+  // Chrome is dark regardless of theme -- bright teal is safe there.
+  --pf-v5-c-masthead--BackgroundColor: #1d1e24;
+  --pf-v5-c-page__sidebar--BackgroundColor: #1d1e24;
+  --pf-v5-c-nav__link--m-current--Color: var(--co-kubana-light--teal);
+  --pf-v5-c-nav__link--m-current--after--BorderColor: var(--co-kubana-light--teal);
+  --pf-v5-c-tabs__item--m-current__link--Color: var(--co-kubana-light--teal-ink);
+  --pf-v5-c-tabs__item--m-current__link--after--BorderColor: var(--co-kubana-light--teal);
+
+  .pf-v5-c-masthead {
+    border-bottom: 1px solid var(--co-kubana-light--teal);
+  }
+
+  .pf-v5-c-table thead {
+    --pf-v5-c-table--BorderColor: var(--co-kubana-light--teal);
+
+    tr {
+      background-color: var(--co-kubana-light--canvas);
+      border-bottom: 2px solid var(--co-kubana-light--teal);
+    }
+  }
+
+  .pf-v5-c-table tbody tr:hover {
+    --pf-v5-c-table--BackgroundColor: rgba(0, 179, 164, 0.08);
+  }
+
+  .pf-v5-c-card {
+    border-top: 2px solid var(--co-kubana-light--teal);
+  }
+}

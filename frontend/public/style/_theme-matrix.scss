@@ -1,0 +1,74 @@
+// Matrix theme
+//
+// Ported from Cassanova's theme set (matrix.css). Terminal-green-on-black,
+// novelty/high-contrast theme. Layers on top of PatternFly's stock dark theme
+// (applied alongside .pf-v5-theme-dark).
+
+:root:where(.co-theme-matrix) {
+  --co-matrix--bg: #000000;
+  --co-matrix--surface: #0a0a0a;
+  --co-matrix--surface-alt: #050505;
+  --co-matrix--green: #00ff41;
+  --co-matrix--green-hover: #33ff66;
+  --co-matrix--green-muted: #00cc33;
+  --co-matrix--border: #1a1a1a;
+  --co-matrix--border-strong: #262626;
+
+  --pf-v5-global--BackgroundColor--100: var(--co-matrix--surface);
+  --pf-v5-global--BackgroundColor--200: var(--co-matrix--bg);
+  --pf-v5-global--BackgroundColor--light-300: var(--co-matrix--surface-alt);
+
+  --pf-v5-global--Color--100: var(--co-matrix--green);
+  --pf-v5-global--Color--200: var(--co-matrix--green-muted);
+
+  --pf-v5-global--primary-color--100: var(--co-matrix--green);
+  --pf-v5-global--active-color--100: var(--co-matrix--green);
+
+  --pf-v5-global--link--Color: var(--co-matrix--green);
+  --pf-v5-global--link--Color--hover: var(--co-matrix--green-hover);
+  --pf-v5-global--link--Color--visited: var(--co-matrix--green-muted);
+
+  --pf-v5-global--BorderColor--100: var(--co-matrix--border);
+  --pf-v5-global--BorderColor--200: var(--co-matrix--border);
+  --pf-v5-global--BorderColor--300: var(--co-matrix--border-strong);
+
+  // Warning stays yellow-green (source: #ccff00) -- distinct enough from the
+  // primary green by hue to still read as "warning" against a green-on-black UI.
+  --pf-v5-global--warning-color--100: #ccff00;
+
+  --pf-v5-c-masthead--BackgroundColor: var(--co-matrix--bg);
+  --pf-v5-c-page__sidebar--BackgroundColor: var(--co-matrix--bg);
+  --pf-v5-c-nav__link--m-current--Color: var(--co-matrix--green);
+  --pf-v5-c-nav__link--m-current--after--BorderColor: var(--co-matrix--green);
+  --pf-v5-c-tabs__item--m-current__link--Color: var(--co-matrix--green);
+  --pf-v5-c-tabs__item--m-current__link--after--BorderColor: var(--co-matrix--green);
+
+  .pf-v5-c-masthead {
+    border-bottom: 1px solid var(--co-matrix--green);
+  }
+
+  // Signature touch: a faint terminal glow on headings, matching the source
+  // theme's --glow-text token.
+  .pf-v5-c-title,
+  h1,
+  h2,
+  h3 {
+    text-shadow: 0 0 4px rgba(0, 255, 65, 0.3);
+  }
+
+  .pf-v5-c-table thead {
+    --pf-v5-c-table--BorderColor: var(--co-matrix--green);
+
+    tr {
+      border-bottom: 2px solid var(--co-matrix--green);
+    }
+  }
+
+  .pf-v5-c-table tbody tr:hover {
+    --pf-v5-c-table--BackgroundColor: rgba(0, 255, 65, 0.08);
+  }
+
+  .pf-v5-c-card {
+    border-top: 2px solid var(--co-matrix--green);
+  }
+}

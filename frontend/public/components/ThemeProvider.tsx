@@ -6,13 +6,31 @@ export const THEME_LOCAL_STORAGE_KEY = 'bridge/theme';
 const THEME_SYSTEM_DEFAULT = 'systemDefault';
 const THEME_DARK_CLASS = 'pf-v5-theme-dark';
 const THEME_DARK_CLASS_LEGACY = 'pf-theme-dark'; // legacy class name needed to support PF4
-const THEME_OROKIN_CLASS = 'co-theme-orokin';
 const THEME_DARK = 'dark';
-const THEME_OROKIN = 'orokin';
+
+// Themes that are visual variants of "dark" -- they get the PF dark class (for sane
+// shadow/border defaults) plus their own class carrying the accent palette override.
+const DARK_FLAVOR_CLASSES: Record<string, string> = {
+  'gruvbox-dark': 'co-theme-gruvbox-dark',
+  'kubana-dark': 'co-theme-kubana-dark',
+  matrix: 'co-theme-matrix',
+  'neon-punk': 'co-theme-neon-punk',
+};
+
+// Themes that are visual variants of "light" -- no PF dark class, just their own class.
+const LIGHT_FLAVOR_CLASSES: Record<string, string> = {
+  orokin: 'co-theme-orokin',
+  'kubana-light': 'co-theme-kubana-light',
+};
 
 // Classes toggled by updateThemeClass. Kept mutually exclusive: exactly one theme's
 // classes (or none, for plain light) are present on the element at a time.
-const ALL_THEME_CLASSES = [THEME_DARK_CLASS, THEME_DARK_CLASS_LEGACY, THEME_OROKIN_CLASS];
+const ALL_THEME_CLASSES = [
+  THEME_DARK_CLASS,
+  THEME_DARK_CLASS_LEGACY,
+  ...Object.values(DARK_FLAVOR_CLASSES),
+  ...Object.values(LIGHT_FLAVOR_CLASSES),
+];
 
 export const updateThemeClass = (htmlTagElement: HTMLElement, theme: string) => {
   let systemTheme: string;
@@ -24,8 +42,14 @@ export const updateThemeClass = (htmlTagElement: HTMLElement, theme: string) => 
   htmlTagElement.classList.remove(...ALL_THEME_CLASSES);
   if (resolvedTheme === THEME_DARK) {
     htmlTagElement.classList.add(THEME_DARK_CLASS, THEME_DARK_CLASS_LEGACY);
-  } else if (resolvedTheme === THEME_OROKIN) {
-    htmlTagElement.classList.add(THEME_OROKIN_CLASS);
+  } else if (DARK_FLAVOR_CLASSES[resolvedTheme]) {
+    htmlTagElement.classList.add(
+      THEME_DARK_CLASS,
+      THEME_DARK_CLASS_LEGACY,
+      DARK_FLAVOR_CLASSES[resolvedTheme],
+    );
+  } else if (LIGHT_FLAVOR_CLASSES[resolvedTheme]) {
+    htmlTagElement.classList.add(LIGHT_FLAVOR_CLASSES[resolvedTheme]);
   }
 };
 

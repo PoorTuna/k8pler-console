@@ -1,0 +1,69 @@
+// Neon Punk theme
+//
+// Ported from Cassanova's theme set (neon-punk.css). Cyberpunk high-contrast
+// theme: void-black background, hot-pink primary, cyan secondary. Layers on
+// top of PatternFly's stock dark theme (applied alongside .pf-v5-theme-dark).
+
+:root:where(.co-theme-neon-punk) {
+  --co-neon--bg: #030305;
+  --co-neon--surface: #08080c;
+  --co-neon--surface-alt: #101014;
+  --co-neon--ink: #ffffff;
+  --co-neon--ink-muted: #e0e0e0;
+  --co-neon--pink: #ff007f;
+  --co-neon--pink-hover: #ff409f;
+  --co-neon--cyan: #00e5ff;
+  --co-neon--border: #2a0016;
+  --co-neon--border-strong: #3a0a20;
+
+  --pf-v5-global--BackgroundColor--100: var(--co-neon--surface);
+  --pf-v5-global--BackgroundColor--200: var(--co-neon--bg);
+  --pf-v5-global--BackgroundColor--light-300: var(--co-neon--surface-alt);
+
+  --pf-v5-global--Color--100: var(--co-neon--ink);
+  --pf-v5-global--Color--200: var(--co-neon--ink-muted);
+
+  --pf-v5-global--primary-color--100: var(--co-neon--pink);
+  --pf-v5-global--active-color--100: var(--co-neon--pink);
+
+  --pf-v5-global--link--Color: var(--co-neon--pink);
+  --pf-v5-global--link--Color--hover: var(--co-neon--pink-hover);
+  --pf-v5-global--link--Color--visited: var(--co-neon--cyan);
+
+  --pf-v5-global--BorderColor--100: var(--co-neon--border);
+  --pf-v5-global--BorderColor--200: var(--co-neon--border);
+  --pf-v5-global--BorderColor--300: var(--co-neon--border-strong);
+
+  --pf-v5-global--warning-color--100: #ffe600;
+
+  // Two-tone cyberpunk accent: pink for links/masthead, cyan for the nav's
+  // current-item indicator and card rule, matching the source theme's
+  // primary/secondary pairing.
+  --pf-v5-c-masthead--BackgroundColor: var(--co-neon--bg);
+  --pf-v5-c-page__sidebar--BackgroundColor: var(--co-neon--bg);
+  --pf-v5-c-nav__link--m-current--Color: var(--co-neon--cyan);
+  --pf-v5-c-nav__link--m-current--after--BorderColor: var(--co-neon--cyan);
+  --pf-v5-c-tabs__item--m-current__link--Color: var(--co-neon--pink);
+  --pf-v5-c-tabs__item--m-current__link--after--BorderColor: var(--co-neon--pink);
+
+  .pf-v5-c-masthead {
+    border-bottom: 1px solid var(--co-neon--pink);
+    box-shadow: 0 0 12px rgba(255, 0, 127, 0.35);
+  }
+
+  .pf-v5-c-table thead {
+    --pf-v5-c-table--BorderColor: var(--co-neon--pink);
+
+    tr {
+      border-bottom: 2px solid var(--co-neon--pink);
+    }
+  }
+
+  .pf-v5-c-table tbody tr:hover {
+    --pf-v5-c-table--BackgroundColor: rgba(255, 0, 127, 0.1);
+  }
+
+  .pf-v5-c-card {
+    border-top: 2px solid var(--co-neon--cyan);
+  }
+}

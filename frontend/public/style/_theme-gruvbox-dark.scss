@@ -1,0 +1,66 @@
+// Gruvbox Dark theme
+//
+// Ported from Cassanova's theme set (gruvbox-dark.css). Retro warm-dark palette:
+// near-black background, cream text, orange accent. Layers on top of PatternFly's
+// stock dark theme (applied alongside .pf-v5-theme-dark) so shadows/borders keep
+// sane dark-mode defaults, then the palette below overrides the accent colors.
+
+:root:where(.co-theme-gruvbox-dark) {
+  --co-gruvbox--bg: #1d2021;
+  --co-gruvbox--surface: #282828;
+  --co-gruvbox--surface-alt: #32302f;
+  --co-gruvbox--ink: #ebdbb2;
+  --co-gruvbox--ink-muted: #d5c4a1;
+  --co-gruvbox--orange: #fe8019;
+  --co-gruvbox--orange-hover: #fea04d;
+  --co-gruvbox--green: #b8bb26;
+  --co-gruvbox--border: #504945;
+  --co-gruvbox--border-strong: #3c3836;
+
+  --pf-v5-global--BackgroundColor--100: var(--co-gruvbox--surface);
+  --pf-v5-global--BackgroundColor--200: var(--co-gruvbox--bg);
+  --pf-v5-global--BackgroundColor--light-300: var(--co-gruvbox--surface-alt);
+
+  --pf-v5-global--Color--100: var(--co-gruvbox--ink);
+  --pf-v5-global--Color--200: var(--co-gruvbox--ink-muted);
+
+  --pf-v5-global--primary-color--100: var(--co-gruvbox--orange);
+  --pf-v5-global--active-color--100: var(--co-gruvbox--orange);
+
+  --pf-v5-global--link--Color: var(--co-gruvbox--orange);
+  --pf-v5-global--link--Color--hover: var(--co-gruvbox--orange-hover);
+  --pf-v5-global--link--Color--visited: var(--co-gruvbox--green);
+
+  --pf-v5-global--BorderColor--100: var(--co-gruvbox--border);
+  --pf-v5-global--BorderColor--200: var(--co-gruvbox--border);
+  --pf-v5-global--BorderColor--300: var(--co-gruvbox--border-strong);
+
+  --pf-v5-global--warning-color--100: #fabd2f;
+
+  --pf-v5-c-masthead--BackgroundColor: var(--co-gruvbox--bg);
+  --pf-v5-c-page__sidebar--BackgroundColor: var(--co-gruvbox--bg);
+  --pf-v5-c-nav__link--m-current--Color: var(--co-gruvbox--orange);
+  --pf-v5-c-nav__link--m-current--after--BorderColor: var(--co-gruvbox--orange);
+  --pf-v5-c-tabs__item--m-current__link--Color: var(--co-gruvbox--orange);
+  --pf-v5-c-tabs__item--m-current__link--after--BorderColor: var(--co-gruvbox--orange);
+
+  .pf-v5-c-masthead {
+    border-bottom: 1px solid var(--co-gruvbox--orange);
+  }
+
+  .pf-v5-c-table thead {
+    --pf-v5-c-table--BorderColor: var(--co-gruvbox--orange);
+
+    tr {
+      border-bottom: 2px solid var(--co-gruvbox--orange);
+    }
+  }
+
+  .pf-v5-c-table tbody tr:hover {
+    --pf-v5-c-table--BackgroundColor: rgba(254, 128, 25, 0.1);
+  }
+
+  .pf-v5-c-card {
+    border-top: 2px solid var(--co-gruvbox--orange);
+  }
+}

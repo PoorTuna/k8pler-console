@@ -362,7 +362,12 @@
           },
           { "value": "light", "label": "%console-app~Light%" },
           { "value": "dark", "label": "%console-app~Dark%" },
-          { "value": "orokin", "label": "%console-app~Orokin%" }
+          { "value": "orokin", "label": "%console-app~Orokin%" },
+          { "value": "gruvbox-dark", "label": "%console-app~Gruvbox Dark%" },
+          { "value": "kubana-dark", "label": "%console-app~Kubana Dark%" },
+          { "value": "kubana-light", "label": "%console-app~Kubana Light%" },
+          { "value": "matrix", "label": "%console-app~Matrix%" },
+          { "value": "neon-punk", "label": "%console-app~Neon Punk%" }
         ]
       }
     }
