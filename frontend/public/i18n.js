@@ -62,6 +62,7 @@ export const init = () => {
         'console-telemetry-plugin',
         'notification-drawer',
         'public',
+        'topology',
         ...pluginStore.getI18nNamespaces(),
       ],
       defaultNS: 'public',

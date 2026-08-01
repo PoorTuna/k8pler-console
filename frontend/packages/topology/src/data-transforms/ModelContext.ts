@@ -52,6 +52,15 @@ export class ExtensibleModel {
       watchedResources: observable.ref,
       isEmptyModel: computed,
     });
+
+    // Base workload rendering (Deployments, StatefulSets, etc., via
+    // baseDataModelGetter) doesn't depend on any Topology/DataModelFactory
+    // extension -- it's always-on. Initialize eagerly so it isn't stuck
+    // waiting on updateExtension(), which only runs when at least one
+    // extension (OLM/Knative/service-binding, none of which this fork ships)
+    // registers.
+    this.updateWatchedResources();
+    this.updateExtensionsLoaded();
   }
 
   public onExtensionsLoaded: (extensibleModel: ExtensibleModel) => void;
@@ -59,14 +68,15 @@ export class ExtensibleModel {
   private updateExtensionsLoaded(): void {
     const extensionKeys = Object.keys(this.extensions);
     const prev = this.extensionsLoaded;
-    this.extensionsLoaded =
-      extensionKeys.length > 1 &&
-      extensionKeys.every(
-        (key) =>
-          !!this.extensions[key].dataModelGetter &&
-          !!this.extensions[key].dataModelDepicter &&
-          !!this.extensions[key].dataModelReconciler,
-      );
+    // Trivially true with zero registered extensions -- this fork ships no
+    // Topology/DataModelFactory plugins (see constructor comment), and base
+    // workload rendering doesn't need any.
+    this.extensionsLoaded = extensionKeys.every(
+      (key) =>
+        !!this.extensions[key].dataModelGetter &&
+        !!this.extensions[key].dataModelDepicter &&
+        !!this.extensions[key].dataModelReconciler,
+    );
     if (!prev && this.extensionsLoaded && this.onExtensionsLoaded) {
       this.onExtensionsLoaded(this);
     }
