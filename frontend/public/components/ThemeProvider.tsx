@@ -6,19 +6,26 @@ export const THEME_LOCAL_STORAGE_KEY = 'bridge/theme';
 const THEME_SYSTEM_DEFAULT = 'systemDefault';
 const THEME_DARK_CLASS = 'pf-v5-theme-dark';
 const THEME_DARK_CLASS_LEGACY = 'pf-theme-dark'; // legacy class name needed to support PF4
+const THEME_OROKIN_CLASS = 'co-theme-orokin';
 const THEME_DARK = 'dark';
+const THEME_OROKIN = 'orokin';
+
+// Classes toggled by updateThemeClass. Kept mutually exclusive: exactly one theme's
+// classes (or none, for plain light) are present on the element at a time.
+const ALL_THEME_CLASSES = [THEME_DARK_CLASS, THEME_DARK_CLASS_LEGACY, THEME_OROKIN_CLASS];
 
 export const updateThemeClass = (htmlTagElement: HTMLElement, theme: string) => {
   let systemTheme: string;
   if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
     systemTheme = THEME_DARK;
   }
-  if (theme === THEME_DARK || (theme === THEME_SYSTEM_DEFAULT && systemTheme === THEME_DARK)) {
-    htmlTagElement.classList.add(THEME_DARK_CLASS);
-    htmlTagElement.classList.add(THEME_DARK_CLASS_LEGACY);
-  } else {
-    htmlTagElement.classList.remove(THEME_DARK_CLASS);
-    htmlTagElement.classList.remove(THEME_DARK_CLASS_LEGACY);
+  const resolvedTheme = theme === THEME_SYSTEM_DEFAULT ? systemTheme : theme;
+
+  htmlTagElement.classList.remove(...ALL_THEME_CLASSES);
+  if (resolvedTheme === THEME_DARK) {
+    htmlTagElement.classList.add(THEME_DARK_CLASS, THEME_DARK_CLASS_LEGACY);
+  } else if (resolvedTheme === THEME_OROKIN) {
+    htmlTagElement.classList.add(THEME_OROKIN_CLASS);
   }
 };
 
@@ -32,18 +39,9 @@ export const ThemeProvider: React.FC<{}> = ({ children }) => {
     THEME_SYSTEM_DEFAULT,
     true,
   );
-  const mqListener = React.useCallback(
-    (e) => {
-      if (e.matches) {
-        htmlTagElement?.classList.add(THEME_DARK_CLASS);
-        htmlTagElement?.classList.add(THEME_DARK_CLASS_LEGACY);
-      } else {
-        htmlTagElement?.classList.remove(THEME_DARK_CLASS);
-        htmlTagElement?.classList.remove(THEME_DARK_CLASS_LEGACY);
-      }
-    },
-    [htmlTagElement],
-  );
+  const mqListener = React.useCallback(() => {
+    updateThemeClass(htmlTagElement, theme);
+  }, [htmlTagElement, theme]);
   React.useEffect(() => {
     const darkThemeMq = window.matchMedia('(prefers-color-scheme: dark)');
     if (theme === THEME_SYSTEM_DEFAULT) {

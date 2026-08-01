@@ -16,6 +16,7 @@
   "System default": "Valeur par défaut du système",
   "Light": "Clair",
   "Dark": "Sombre",
+  "Orokin": "Orokin",
   "Perspective": "Perspective",
   "If a perspective is not selected, the console defaults to the last viewed.": "Si aucune perspective n’est sélectionnée, la console utilise par défaut la dernière perspective affichée.",
   "Project": "Projet",

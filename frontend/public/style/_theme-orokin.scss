@@ -1,0 +1,136 @@
+// Orokin theme
+//
+// A light theme laced with gold, inspired by Warframe's Orokin design language:
+// warm ivory/white surfaces with black-gold chrome (masthead + nav).
+//
+// Hard rule: bright gold (--co-orokin--gold, --co-orokin--gold-bright) never carries text
+// meaning on a light surface -- it is ornament only there (hairlines, underlines, rules).
+// Anything that must read as text/interactive on a light surface uses --co-orokin--gold-ink,
+// which is a darkened gold tuned for AA contrast. --co-orokin--gold-bright is reserved for
+// text/indicators on the dark chrome (masthead/sidebar), where it has plenty of contrast.
+
+:root:where(.co-theme-orokin) {
+  // == Raw ramp ==============================================================
+
+  // Surfaces
+  --co-orokin--surface: #fefefe; // cards, tables, modals, popovers
+  --co-orokin--canvas: #f7f4ec; // page background (warm ivory)
+  --co-orokin--canvas-alt: #fbf8f0; // striped rows, inset panels, table headers
+
+  // Text
+  --co-orokin--ink: #121212; // primary text -- 17.5:1 on canvas
+  --co-orokin--ink-muted: #4a4438; // secondary text -- 8.9:1 on canvas
+
+  // Gold -- text-safe ("ink") vs ornament-only ("gold") vs dark-chrome-safe ("bright")
+  --co-orokin--gold-ink: #7a5a00; // links, primary buttons, active tab text -- 6.8:1 on surface
+  --co-orokin--gold-ink-hover: #4d3800; // hover/visited -- 10.9:1 on surface
+  --co-orokin--gold: #c8a951; // hairlines, dividers, rules -- ornament only, not text
+  --co-orokin--gold-bright: #f0ab00; // text/indicators on dark chrome only -- 10.4:1 on chrome
+  --co-orokin--gold-wash: #fbf3dc; // hover/selected row background
+
+  // Borders
+  --co-orokin--border: #e0d8c3;
+  --co-orokin--border-strong: #cfc3a3;
+
+  // Chrome (masthead + sidebar are dark regardless of theme)
+  --co-orokin--chrome: #121212;
+  --co-orokin--chrome-alt: #171717;
+  --co-orokin--chrome-ink: #f5efe0;
+
+  // == PatternFly global token remap =========================================
+
+  --pf-v5-global--BackgroundColor--100: var(--co-orokin--surface);
+  --pf-v5-global--BackgroundColor--200: var(--co-orokin--canvas);
+  --pf-v5-global--BackgroundColor--light-300: var(--co-orokin--canvas-alt);
+
+  --pf-v5-global--Color--100: var(--co-orokin--ink);
+  --pf-v5-global--Color--200: var(--co-orokin--ink-muted);
+
+  --pf-v5-global--primary-color--100: var(--co-orokin--gold-ink);
+  --pf-v5-global--active-color--100: var(--co-orokin--gold-ink);
+
+  --pf-v5-global--link--Color: var(--co-orokin--gold-ink);
+  --pf-v5-global--link--Color--hover: var(--co-orokin--gold-ink-hover);
+  --pf-v5-global--link--Color--visited: var(--co-orokin--gold-ink-hover);
+
+  --pf-v5-global--BorderColor--100: var(--co-orokin--border);
+  --pf-v5-global--BorderColor--200: var(--co-orokin--border);
+  --pf-v5-global--BorderColor--300: var(--co-orokin--border-strong);
+
+  // Gold is now the brand accent, so warning moves off gold to stay distinguishable.
+  --pf-v5-global--warning-color--100: #ec7a08;
+
+  // == Co palette (mirrors _theme-dark.scss keys so shared consumers follow the theme) ======
+
+  --co-global--palette--blue-400: var(--pf-v5-global--palette--blue-600);
+  --co-global--palette--purple-600: var(--pf-v5-global--palette--purple-700);
+  --co-global--palette--orange-400: var(--pf-v5-global--palette--orange-600);
+  --co-global--palette--purple-700: var(--pf-v5-global--palette--purple-700);
+
+  --co-skeleton--Color: var(--co-orokin--canvas-alt);
+  --co-skeleton--Color--300: var(--co-orokin--border);
+
+  // == Targeted ornament =====================================================
+
+  // Masthead: black chrome with a gold hairline underneath.
+  --pf-v5-c-masthead--BackgroundColor: var(--co-orokin--chrome);
+
+  .pf-v5-c-masthead {
+    border-bottom: 1px solid var(--co-orokin--gold);
+  }
+
+  // Sidebar is already rendered with the PF "dark" nav variant (see
+  // frontend/packages/console-app/src/components/nav/index.tsx); re-tint it to match
+  // the masthead and pick out the current item with the bright gold accent.
+  --pf-v5-c-page__sidebar--BackgroundColor: var(--co-orokin--chrome-alt);
+  --pf-v5-c-nav__link--m-current--Color: var(--co-orokin--gold-bright);
+  --pf-v5-c-nav__link--m-current--after--BorderColor: var(--co-orokin--gold-bright);
+  --pf-v5-c-nav__subnav__link--m-current--after--BorderColor: var(--co-orokin--gold-bright);
+  --pf-v5-c-nav__section__link--m-current--after--BorderColor: var(--co-orokin--gold-bright);
+
+  // Tabs: current tab reads in gold-ink with a gold underline.
+  --pf-v5-c-tabs__item--m-current__link--Color: var(--co-orokin--gold-ink);
+  --pf-v5-c-tabs__item--m-current__link--after--BorderColor: var(--co-orokin--gold);
+
+  // Focus ring: give the (already gold-ink-driven) outline breathing room on ivory.
+  --pf-v5-global--BorderWidth--md: 2px;
+
+  .pf-v5-c-table {
+    // Table header: gold underline + a warm inset row so headers separate from data.
+    thead {
+      --pf-v5-c-table--BorderColor: var(--co-orokin--gold);
+
+      tr {
+        background-color: var(--co-orokin--canvas-alt);
+        border-bottom: 2px solid var(--co-orokin--gold);
+      }
+    }
+
+    tbody tr:hover {
+      --pf-v5-c-table--BackgroundColor: var(--co-orokin--gold-wash);
+    }
+  }
+
+  // Selected / hover rows and list items pick up the warm gold wash.
+  .pf-v5-c-data-list__item.pf-m-selectable:hover,
+  .pf-v5-c-data-list__item-row:hover,
+  .pf-v5-c-menu__list-item:hover,
+  .pf-v5-c-options-menu__menu-item:hover,
+  .pf-v5-c-dropdown__menu-item:hover {
+    background-color: var(--co-orokin--gold-wash);
+  }
+
+  .pf-v5-c-chip.pf-m-overflow,
+  .pf-v5-c-toolbar__item .pf-v5-c-chip-group {
+    --pf-v5-c-chip--BackgroundColor: var(--co-orokin--gold-wash);
+  }
+
+  // Card: gold top-rule "lacing" instead of PF's plain shadow-only separation.
+  .pf-v5-c-card {
+    border-top: 2px solid var(--co-orokin--gold);
+  }
+}
+
+:where(.co-theme-orokin) *:focus-visible {
+  outline-offset: 2px;
+}
