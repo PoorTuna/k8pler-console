@@ -13,6 +13,7 @@
     "@console/plugin-sdk": "0.0.0-fixed",
     "@console/shared": "0.0.0-fixed",
     "@console/telemetry-plugin": "0.0.0-fixed",
+    "@console/topology": "0.0.0-fixed",
     "asn1js": "^2.0.26",
     "pkijs": "^2.1.89",
     "pvutils": "^1.1.3"
