@@ -13,8 +13,12 @@
   --co-neon--pink: #ff007f;
   --co-neon--pink-hover: #ff409f;
   --co-neon--cyan: #00e5ff;
-  --co-neon--border: #2a0016;
-  --co-neon--border-strong: #3a0a20;
+  // Neutral, not hue-tinted: these back generic dividers used all over the
+  // app (namespace bar, nav-title, forms, modals). Tinting them pink made
+  // ordinary hairlines read as stray accent-colored bars against the
+  // near-black background.
+  --co-neon--border: #242428;
+  --co-neon--border-strong: #38383e;
 
   --pf-v5-global--BackgroundColor--100: var(--co-neon--surface);
   --pf-v5-global--BackgroundColor--200: var(--co-neon--bg);
